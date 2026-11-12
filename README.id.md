@@ -105,61 +105,27 @@ Setiap koefisien $`\beta_{ij}`$ mewakili satu hipotesis.
 
 ## Estimasi
 
-SEMbada menerapkan algoritma PLS iteratif dari Wold dan Lohmöller. Indikator distandarkan, semua bobot luar diawali dengan 1, lalu langkah berikut diulang sampai bobot tidak lagi berubah.
+SEMbada menerapkan algoritma PLS iteratif dari Wold dan Lohmöller. Indikator distandarkan, semua bobot luar diawali dengan 1, lalu tiga langkah diulang sampai bobot tidak lagi berubah.
 
-```mermaid
-flowchart TD
-  S["Standarkan indikator, semua bobot = 1"] --> O["Aproksimasi luar: skor konstruk dari indikator berbobot"]
-  O --> I["Aproksimasi dalam: skor dari konstruk tetangga"]
-  I --> U["Perbarui bobot: Mode A atau Mode B"]
-  U --> C{"Perubahan bobot terbesar di bawah 10^-7?"}
-  C -- belum --> O
-  C -- ya --> F["Estimasi akhir: loading, koefisien jalur, R²"]
-```
+<p align="center"><img src="docs/img/pls-algorithm-id.svg" width="86%" alt="Algoritma PLS iteratif"></p>
 
-**1. Aproksimasi luar.** Skor setiap konstruk adalah jumlah berbobot dari indikator terstandar, diskalakan agar variansnya 1:
+**Langkah 1 dan 2: aproksimasi luar dan dalam.** Skor setiap konstruk adalah jumlah berbobot dari indikator terstandar yang diskalakan agar variansnya 1, lalu didekati oleh konstruk tetangganya dalam model jalur:
 
 ```math
-\hat{\eta}_{j} = \sum_{k=1}^{K_{j}} w_{kj}\,x_{kj}
+\hat{\eta}_{j} = \sum_{k=1}^{K_{j}} w_{kj}\,x_{kj}, \qquad \tilde{\eta}_{j} = \sum_{i \neq j} e_{ij}\,\hat{\eta}_{i}
 ```
 
-**2. Aproksimasi dalam.** Setiap konstruk didekati oleh konstruk tetangganya dalam model jalur:
+Dengan skema pembobotan *path* (bawaan), $`e_{ij} = b_{ij}`$ bila $`i \in P_j`$ (koefisien regresi $`\hat\eta_i`$ ketika $`\hat\eta_j`$ diregresikan pada konstruk pendahulunya), $`e_{ij} = \mathrm{cor}(\hat\eta_i,\hat\eta_j)`$ bila $`j \in P_i`$, dan $`e_{ij} = 0`$ untuk lainnya. Skema *factorial* memakai korelasinya dan skema *centroid* memakai tandanya, untuk semua konstruk yang bertetangga.
+
+**Langkah 3: pembaruan bobot.** Konstruk reflektif memakai Mode A (bobot korelasi) dan konstruk formatif memakai Mode B (bobot regresi). Perulangan berhenti bila $`\max_k \lvert w_k^{(s+1)} - w_k^{(s)} \rvert < 10^{-7}`$, dengan paling banyak 300 iterasi (keduanya bisa diubah):
 
 ```math
-\tilde{\eta}_{j} = \sum_{i \neq j} e_{ij}\,\hat{\eta}_{i}
+w_{kj} \propto \mathrm{cov}\left(x_{kj},\,\tilde{\eta}_{j}\right) \quad \text{(Mode A)}, \qquad \mathbf{w}_{j} = \left(\mathbf{X}_{j}^{\top}\mathbf{X}_{j}\right)^{-1}\mathbf{X}_{j}^{\top}\tilde{\boldsymbol{\eta}}_{j} \quad \text{(Mode B)}
 ```
 
-Dengan **skema pembobotan *path*** (bawaan), bobot dalamnya adalah
+**Estimasi akhir.** Loading adalah $`\lambda_{kj} = \mathrm{cor}(x_{kj},\hat\eta_j)`$. Koefisien jalur setiap konstruk endogen diestimasi dengan kuadrat terkecil pada skor akhir, $`\hat{\boldsymbol\beta}_{j} = (\hat{\mathbf H}_{P_j}^{\top}\hat{\mathbf H}_{P_j})^{-1}\hat{\mathbf H}_{P_j}^{\top}\hat{\boldsymbol\eta}_{j}`$, dengan $`\hat{\mathbf H}_{P_j}`$ berisi skor konstruk pendahulu dari konstruk $`j`$.
 
-```math
-e_{ij} = \begin{cases} b_{ij}, & i \in P_{j} \\ \mathrm{cor}(\hat{\eta}_{i},\hat{\eta}_{j}), & j \in P_{i} \\ 0, & \text{lainnya} \end{cases}
-```
-
-dengan $`b_{ij}`$ koefisien regresi $`\hat\eta_j`$ terhadap konstruk pendahulunya. Skema ***factorial*** memakai $`e_{ij} = \mathrm{cor}(\hat\eta_i,\hat\eta_j)`$, dan skema ***centroid*** memakai tandanya saja, keduanya hanya untuk konstruk yang bertetangga.
-
-**3. Pembaruan bobot.** Konstruk reflektif memakai Mode A (bobot korelasi), konstruk formatif memakai Mode B (bobot regresi):
-
-{{eq:modeA}}
-
-{{eq:modeB}}
-
-**4. Konvergensi.** Algoritma berhenti bila
-
-```math
-\max_{k}\,\bigl|w_{k}^{(s+1)} - w_{k}^{(s)}\bigr| < \epsilon
-```
-
-dengan $`\epsilon = 10^{-7}`$ dan paling banyak 300 iterasi (keduanya bisa diubah).
-
-**Estimasi akhir.** Loading adalah $`\lambda_{kj} = \mathrm{cor}(x_{kj},\hat\eta_j)`$, dan koefisien jalur setiap konstruk endogen diestimasi dengan kuadrat terkecil biasa pada skor akhir,
-
-```math
-\hat{\boldsymbol\beta}_{j} = \left(\hat{\mathbf H}_{P_j}^{\top}\hat{\mathbf H}_{P_j}\right)^{-1}\hat{\mathbf H}_{P_j}^{\top}\,\hat{\boldsymbol\eta}_{j},
-```
-
-dengan $`\hat{\mathbf H}_{P_j}`$ berisi skor konstruk pendahulu dari konstruk $`j`$.
-
-**PLS konsisten (PLSc).** Untuk konstruk reflektif, PLSc mengoreksi pelemahan (atenuasi) skor komposit dengan koefisien reliabilitas $`\rho_A`$ (Dijkstra dan Henseler):
+**PLS konsisten (PLSc).** Untuk konstruk reflektif, PLSc mengoreksi pelemahan skor komposit dengan koefisien reliabilitas $`\rho_A`$ (Dijkstra dan Henseler), lalu mengestimasi jalur dari korelasi antarkonstruk yang sudah dikoreksi:
 
 ```math
 \rho_{A} = \left(\hat{\mathbf{w}}^{\top}\hat{\mathbf{w}}\right)^{2}\frac{\hat{\mathbf{w}}^{\top}\left(\mathbf{S}-\mathrm{diag}\,\mathbf{S}\right)\hat{\mathbf{w}}}{\hat{\mathbf{w}}^{\top}\left(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top}-\mathrm{diag}(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top})\right)\hat{\mathbf{w}}}
@@ -168,8 +134,6 @@ dengan $`\hat{\mathbf H}_{P_j}`$ berisi skor konstruk pendahulu dari konstruk $`
 ```math
 \hat{\boldsymbol\lambda}_{j} = \hat c_{j}\,\hat{\mathbf w}_{j}, \qquad \hat c_{j}^{2} = \frac{\rho_{A,j}}{\left(\hat{\mathbf w}_{j}^{\top}\hat{\mathbf w}_{j}\right)^{2}}, \qquad \widetilde{\mathrm{cor}}(\eta_i,\eta_j) = \frac{\mathrm{cor}(\hat\eta_i,\hat\eta_j)}{\sqrt{\rho_{A,i}\,\rho_{A,j}}}
 ```
-
-Koefisien jalur kemudian diestimasi dari korelasi antarkonstruk yang sudah dikoreksi.
 
 ## Evaluasi model pengukuran
 

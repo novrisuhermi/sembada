@@ -105,61 +105,27 @@ Every coefficient $`\beta_{ij}`$ corresponds to one hypothesis.
 
 ## Estimation
 
-SEMbada implements the iterative PLS algorithm of Wold and Lohmöller. Indicators are standardized, all outer weights start at 1, and the following steps repeat until the weights stop changing.
+SEMbada implements the iterative PLS algorithm of Wold and Lohmöller. Indicators are standardized, all outer weights start at 1, and three steps repeat until the weights stop changing.
 
-```mermaid
-flowchart TD
-  S["Standardize indicators, set all weights to 1"] --> O["Outer approximation: construct scores from weighted indicators"]
-  O --> I["Inner approximation: scores from neighbouring constructs"]
-  I --> U["Update the weights: Mode A or Mode B"]
-  U --> C{"Largest weight change below 10^-7?"}
-  C -- no --> O
-  C -- yes --> F["Final estimates: loadings, path coefficients, R²"]
-```
+<p align="center"><img src="docs/img/pls-algorithm.svg" width="86%" alt="The iterative PLS algorithm"></p>
 
-**1. Outer approximation.** Each construct score is a weighted sum of its standardized indicators, scaled to unit variance:
+**Steps 1 and 2: outer and inner approximation.** Each construct score is a weighted sum of its standardized indicators, scaled to unit variance, and is then approximated by its neighbours in the path model:
 
 ```math
-\hat{\eta}_{j} = \sum_{k=1}^{K_{j}} w_{kj}\,x_{kj}
+\hat{\eta}_{j} = \sum_{k=1}^{K_{j}} w_{kj}\,x_{kj}, \qquad \tilde{\eta}_{j} = \sum_{i \neq j} e_{ij}\,\hat{\eta}_{i}
 ```
 
-**2. Inner approximation.** Each construct is approximated by its neighbours in the path model:
+With the default path weighting scheme, $`e_{ij} = b_{ij}`$ if $`i \in P_j`$ (the regression coefficient of $`\hat\eta_i`$ when $`\hat\eta_j`$ is regressed on its predecessors), $`e_{ij} = \mathrm{cor}(\hat\eta_i,\hat\eta_j)`$ if $`j \in P_i`$, and $`e_{ij} = 0`$ otherwise. The factorial scheme uses the correlation and the centroid scheme its sign, for all adjacent constructs.
+
+**Step 3: weight update.** Reflective constructs use Mode A (correlation weights) and formative constructs Mode B (regression weights). The loop stops when $`\max_k \lvert w_k^{(s+1)} - w_k^{(s)} \rvert < 10^{-7}`$, with at most 300 iterations (both adjustable):
 
 ```math
-\tilde{\eta}_{j} = \sum_{i \neq j} e_{ij}\,\hat{\eta}_{i}
+w_{kj} \propto \mathrm{cov}\left(x_{kj},\,\tilde{\eta}_{j}\right) \quad \text{(Mode A)}, \qquad \mathbf{w}_{j} = \left(\mathbf{X}_{j}^{\top}\mathbf{X}_{j}\right)^{-1}\mathbf{X}_{j}^{\top}\tilde{\boldsymbol{\eta}}_{j} \quad \text{(Mode B)}
 ```
 
-With the default **path weighting scheme**, the inner weights are
+**Final estimates.** Loadings are $`\lambda_{kj} = \mathrm{cor}(x_{kj},\hat\eta_j)`$. The path coefficients of each endogenous construct are least squares estimates on the final scores, $`\hat{\boldsymbol\beta}_{j} = (\hat{\mathbf H}_{P_j}^{\top}\hat{\mathbf H}_{P_j})^{-1}\hat{\mathbf H}_{P_j}^{\top}\hat{\boldsymbol\eta}_{j}`$, where $`\hat{\mathbf H}_{P_j}`$ holds the scores of the predecessors of construct $`j`$.
 
-```math
-e_{ij} = \begin{cases} b_{ij}, & i \in P_{j} \\ \mathrm{cor}(\hat{\eta}_{i},\hat{\eta}_{j}), & j \in P_{i} \\ 0, & \text{otherwise} \end{cases}
-```
-
-where $`b_{ij}`$ are the coefficients of a regression of $`\hat\eta_j`$ on its predecessors. The **factorial** scheme uses $`e_{ij} = \mathrm{cor}(\hat\eta_i,\hat\eta_j)`$ and the **centroid** scheme uses its sign, both for adjacent constructs only.
-
-**3. Weight update.** Reflective constructs use Mode A (correlation weights), formative constructs use Mode B (regression weights):
-
-{{eq:modeA}}
-
-{{eq:modeB}}
-
-**4. Convergence.** The algorithm stops when
-
-```math
-\max_{k}\,\bigl|w_{k}^{(s+1)} - w_{k}^{(s)}\bigr| < \epsilon
-```
-
-with $`\epsilon = 10^{-7}`$ and at most 300 iterations (both adjustable).
-
-**Final estimates.** Loadings are $`\lambda_{kj} = \mathrm{cor}(x_{kj},\hat\eta_j)`$, and the path coefficients of each endogenous construct are ordinary least squares estimates on the final scores,
-
-```math
-\hat{\boldsymbol\beta}_{j} = \left(\hat{\mathbf H}_{P_j}^{\top}\hat{\mathbf H}_{P_j}\right)^{-1}\hat{\mathbf H}_{P_j}^{\top}\,\hat{\boldsymbol\eta}_{j},
-```
-
-where $`\hat{\mathbf H}_{P_j}`$ holds the scores of the predecessors of construct $`j`$.
-
-**Consistent PLS (PLSc).** For reflective constructs, PLSc corrects the attenuation of composite scores using the reliability coefficient $`\rho_A`$ (Dijkstra and Henseler):
+**Consistent PLS (PLSc).** For reflective constructs, PLSc corrects the attenuation of composite scores with the reliability coefficient $`\rho_A`$ (Dijkstra and Henseler) and then estimates the paths from the corrected construct correlations:
 
 ```math
 \rho_{A} = \left(\hat{\mathbf{w}}^{\top}\hat{\mathbf{w}}\right)^{2}\frac{\hat{\mathbf{w}}^{\top}\left(\mathbf{S}-\mathrm{diag}\,\mathbf{S}\right)\hat{\mathbf{w}}}{\hat{\mathbf{w}}^{\top}\left(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top}-\mathrm{diag}(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top})\right)\hat{\mathbf{w}}}
@@ -168,8 +134,6 @@ where $`\hat{\mathbf H}_{P_j}`$ holds the scores of the predecessors of construc
 ```math
 \hat{\boldsymbol\lambda}_{j} = \hat c_{j}\,\hat{\mathbf w}_{j}, \qquad \hat c_{j}^{2} = \frac{\rho_{A,j}}{\left(\hat{\mathbf w}_{j}^{\top}\hat{\mathbf w}_{j}\right)^{2}}, \qquad \widetilde{\mathrm{cor}}(\eta_i,\eta_j) = \frac{\mathrm{cor}(\hat\eta_i,\hat\eta_j)}{\sqrt{\rho_{A,i}\,\rho_{A,j}}}
 ```
-
-The path coefficients are then estimated from the corrected construct correlations.
 
 ## Assessing the measurement model
 
