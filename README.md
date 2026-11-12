@@ -67,14 +67,7 @@ No data at hand? Choose **Try the sample data** on the home screen, or open one 
 
 ## Workflow
 
-```mermaid
-flowchart LR
-  A["Data<br/>xlsx or csv"] --> B["Model<br/>constructs and paths"]
-  B --> C["Research info<br/>title, authors, definitions"]
-  C --> D["Calculate<br/>PLS, bootstrap, PLSpredict"]
-  D --> E["Results<br/>checks, tables, charts"]
-  E --> F["Exports<br/>Word, LaTeX/PDF, PowerPoint, Excel"]
-```
+<p align="center"><img src="docs/img/workflow.svg" width="92%" alt="SEMbada workflow: data, model, research info, calculate, results, exports"></p>
 
 <p align="center">
 <img src="docs/img/model-builder.png" width="49%" alt="Model builder">

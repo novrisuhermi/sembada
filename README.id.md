@@ -67,14 +67,7 @@ Belum punya data? Pilih **Coba data contoh** di Beranda, atau buka salah satu da
 
 ## Alur kerja
 
-```mermaid
-flowchart LR
-  A["Data<br/>xlsx atau csv"] --> B["Model<br/>konstruk dan jalur"]
-  B --> C["Info penelitian<br/>judul, penulis, definisi"]
-  C --> D["Hitung<br/>PLS, bootstrap, PLSpredict"]
-  D --> E["Hasil<br/>uji, tabel, grafik"]
-  E --> F["Ekspor<br/>Word, LaTeX/PDF, PowerPoint, Excel"]
-```
+<p align="center"><img src="docs/img/workflow-id.svg" width="92%" alt="Alur kerja SEMbada: data, model, info penelitian, hitung, hasil, ekspor"></p>
 
 <p align="center">
 <img src="docs/img/model-builder.png" width="49%" alt="Penyusun model">
