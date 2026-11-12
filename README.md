@@ -132,10 +132,10 @@ flowchart TD
 With the default **path weighting scheme**, the inner weights are
 
 ```math
-e_{ij} = \begin{cases} b_{ij}, & i \in P_{j} \\ \operatorname{cor}(\hat{\eta}_{i},\hat{\eta}_{j}), & j \in P_{i} \\ 0, & \text{otherwise} \end{cases}
+e_{ij} = \begin{cases} b_{ij}, & i \in P_{j} \\ \mathrm{cor}(\hat{\eta}_{i},\hat{\eta}_{j}), & j \in P_{i} \\ 0, & \text{otherwise} \end{cases}
 ```
 
-where $`b_{ij}`$ are the coefficients of a regression of $`\hat\eta_j`$ on its predecessors. The **factorial** scheme uses $`e_{ij} = \operatorname{cor}(\hat\eta_i,\hat\eta_j)`$ and the **centroid** scheme uses its sign, both for adjacent constructs only.
+where $`b_{ij}`$ are the coefficients of a regression of $`\hat\eta_j`$ on its predecessors. The **factorial** scheme uses $`e_{ij} = \mathrm{cor}(\hat\eta_i,\hat\eta_j)`$ and the **centroid** scheme uses its sign, both for adjacent constructs only.
 
 **3. Weight update.** Reflective constructs use Mode A (correlation weights), formative constructs use Mode B (regression weights):
 
@@ -151,7 +151,7 @@ where $`b_{ij}`$ are the coefficients of a regression of $`\hat\eta_j`$ on its p
 
 with $`\epsilon = 10^{-7}`$ and at most 300 iterations (both adjustable).
 
-**Final estimates.** Loadings are $`\lambda_{kj} = \operatorname{cor}(x_{kj},\hat\eta_j)`$, and the path coefficients of each endogenous construct are ordinary least squares estimates on the final scores,
+**Final estimates.** Loadings are $`\lambda_{kj} = \mathrm{cor}(x_{kj},\hat\eta_j)`$, and the path coefficients of each endogenous construct are ordinary least squares estimates on the final scores,
 
 ```math
 \hat{\boldsymbol\beta}_{j} = \left(\hat{\mathbf H}_{P_j}^{\top}\hat{\mathbf H}_{P_j}\right)^{-1}\hat{\mathbf H}_{P_j}^{\top}\,\hat{\boldsymbol\eta}_{j},
@@ -162,11 +162,11 @@ where $`\hat{\mathbf H}_{P_j}`$ holds the scores of the predecessors of construc
 **Consistent PLS (PLSc).** For reflective constructs, PLSc corrects the attenuation of composite scores using the reliability coefficient $`\rho_A`$ (Dijkstra and Henseler):
 
 ```math
-\rho_{A} = \left(\hat{\mathbf{w}}^{\top}\hat{\mathbf{w}}\right)^{2}\frac{\hat{\mathbf{w}}^{\top}\left(\mathbf{S}-\operatorname{diag}\mathbf{S}\right)\hat{\mathbf{w}}}{\hat{\mathbf{w}}^{\top}\left(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top}-\operatorname{diag}(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top})\right)\hat{\mathbf{w}}}
+\rho_{A} = \left(\hat{\mathbf{w}}^{\top}\hat{\mathbf{w}}\right)^{2}\frac{\hat{\mathbf{w}}^{\top}\left(\mathbf{S}-\mathrm{diag}\,\mathbf{S}\right)\hat{\mathbf{w}}}{\hat{\mathbf{w}}^{\top}\left(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top}-\mathrm{diag}(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top})\right)\hat{\mathbf{w}}}
 ```
 
 ```math
-\hat{\boldsymbol\lambda}_{j} = \hat c_{j}\,\hat{\mathbf w}_{j}, \qquad \hat c_{j}^{2} = \frac{\rho_{A,j}}{\left(\hat{\mathbf w}_{j}^{\top}\hat{\mathbf w}_{j}\right)^{2}}, \qquad \widetilde{\operatorname{cor}}(\eta_i,\eta_j) = \frac{\operatorname{cor}(\hat\eta_i,\hat\eta_j)}{\sqrt{\rho_{A,i}\,\rho_{A,j}}}
+\hat{\boldsymbol\lambda}_{j} = \hat c_{j}\,\hat{\mathbf w}_{j}, \qquad \hat c_{j}^{2} = \frac{\rho_{A,j}}{\left(\hat{\mathbf w}_{j}^{\top}\hat{\mathbf w}_{j}\right)^{2}}, \qquad \widetilde{\mathrm{cor}}(\eta_i,\eta_j) = \frac{\mathrm{cor}(\hat\eta_i,\hat\eta_j)}{\sqrt{\rho_{A,i}\,\rho_{A,j}}}
 ```
 
 The path coefficients are then estimated from the corrected construct correlations.
@@ -195,7 +195,7 @@ The path coefficients are then estimated from the corrected construct correlatio
 \mathrm{HTMT}_{ij} = \frac{\bar{r}_{ij}}{\sqrt{\bar{r}_{ii}\,\bar{r}_{jj}}}
 ```
 
-SEMbada also reports bootstrap confidence intervals for HTMT, the Fornell–Larcker criterion $`\sqrt{\mathrm{AVE}_j} > \max_{i\neq j}\lvert\operatorname{cor}(\hat\eta_i,\hat\eta_j)\rvert`$, and cross loadings.
+SEMbada also reports bootstrap confidence intervals for HTMT, the Fornell–Larcker criterion $`\sqrt{\mathrm{AVE}_j} > \max_{i\neq j}\lvert\mathrm{cor}(\hat\eta_i,\hat\eta_j)\rvert`$, and cross loadings.
 
 **Collinearity** among formative indicators and among predictors in the structural model, where $`R_k^2`$ is the $`R^2`$ of regressing variable $`k`$ on the others:
 
@@ -220,7 +220,7 @@ SEMbada also reports bootstrap confidence intervals for HTMT, the Fornell–Larc
 **Explained variance and effect size.** $`p_j`$ is the number of predictors of construct $`j`$, and the effect size compares $`R^2`$ with and without one predictor:
 
 ```math
-R_{j}^{2} = 1 - \frac{\operatorname{Var}(\hat{\zeta}_{j})}{\operatorname{Var}(\hat{\eta}_{j})},\qquad R_{\mathrm{adj}}^{2} = 1 - \left(1 - R_{j}^{2}\right)\frac{n-1}{n-p_{j}-1}
+R_{j}^{2} = 1 - \frac{\mathrm{Var}(\hat{\zeta}_{j})}{\mathrm{Var}(\hat{\eta}_{j})},\qquad R_{\mathrm{adj}}^{2} = 1 - \left(1 - R_{j}^{2}\right)\frac{n-1}{n-p_{j}-1}
 ```
 
 ```math
@@ -306,7 +306,7 @@ The effect of $`X`$ on $`Y`$ then depends on the moderator. SEMbada plots simple
 **Multigroup analysis (MGA).** Before comparing groups, SEMbada runs MICOM. Step 2 (compositional invariance) correlates the composite scores formed with the weights of each group,
 
 ```math
-c_{j} = \operatorname{cor}\left(\mathbf{X}\mathbf{w}_{j}^{(1)},\, \mathbf{X}\mathbf{w}_{j}^{(2)}\right)
+c_{j} = \mathrm{cor}\left(\mathbf{X}\mathbf{w}_{j}^{(1)},\, \mathbf{X}\mathbf{w}_{j}^{(2)}\right)
 ```
 
 and compares $`c_j`$ with its permutation distribution. Step 3 tests the equality of composite means and variances. Path differences $`\Delta\beta = \beta^{(1)} - \beta^{(2)}`$ are tested with $`P`$ random reassignments of cases to groups,

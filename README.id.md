@@ -132,10 +132,10 @@ flowchart TD
 Dengan **skema pembobotan *path*** (bawaan), bobot dalamnya adalah
 
 ```math
-e_{ij} = \begin{cases} b_{ij}, & i \in P_{j} \\ \operatorname{cor}(\hat{\eta}_{i},\hat{\eta}_{j}), & j \in P_{i} \\ 0, & \text{lainnya} \end{cases}
+e_{ij} = \begin{cases} b_{ij}, & i \in P_{j} \\ \mathrm{cor}(\hat{\eta}_{i},\hat{\eta}_{j}), & j \in P_{i} \\ 0, & \text{lainnya} \end{cases}
 ```
 
-dengan $`b_{ij}`$ koefisien regresi $`\hat\eta_j`$ terhadap konstruk pendahulunya. Skema ***factorial*** memakai $`e_{ij} = \operatorname{cor}(\hat\eta_i,\hat\eta_j)`$, dan skema ***centroid*** memakai tandanya saja, keduanya hanya untuk konstruk yang bertetangga.
+dengan $`b_{ij}`$ koefisien regresi $`\hat\eta_j`$ terhadap konstruk pendahulunya. Skema ***factorial*** memakai $`e_{ij} = \mathrm{cor}(\hat\eta_i,\hat\eta_j)`$, dan skema ***centroid*** memakai tandanya saja, keduanya hanya untuk konstruk yang bertetangga.
 
 **3. Pembaruan bobot.** Konstruk reflektif memakai Mode A (bobot korelasi), konstruk formatif memakai Mode B (bobot regresi):
 
@@ -151,7 +151,7 @@ dengan $`b_{ij}`$ koefisien regresi $`\hat\eta_j`$ terhadap konstruk pendahuluny
 
 dengan $`\epsilon = 10^{-7}`$ dan paling banyak 300 iterasi (keduanya bisa diubah).
 
-**Estimasi akhir.** Loading adalah $`\lambda_{kj} = \operatorname{cor}(x_{kj},\hat\eta_j)`$, dan koefisien jalur setiap konstruk endogen diestimasi dengan kuadrat terkecil biasa pada skor akhir,
+**Estimasi akhir.** Loading adalah $`\lambda_{kj} = \mathrm{cor}(x_{kj},\hat\eta_j)`$, dan koefisien jalur setiap konstruk endogen diestimasi dengan kuadrat terkecil biasa pada skor akhir,
 
 ```math
 \hat{\boldsymbol\beta}_{j} = \left(\hat{\mathbf H}_{P_j}^{\top}\hat{\mathbf H}_{P_j}\right)^{-1}\hat{\mathbf H}_{P_j}^{\top}\,\hat{\boldsymbol\eta}_{j},
@@ -162,11 +162,11 @@ dengan $`\hat{\mathbf H}_{P_j}`$ berisi skor konstruk pendahulu dari konstruk $`
 **PLS konsisten (PLSc).** Untuk konstruk reflektif, PLSc mengoreksi pelemahan (atenuasi) skor komposit dengan koefisien reliabilitas $`\rho_A`$ (Dijkstra dan Henseler):
 
 ```math
-\rho_{A} = \left(\hat{\mathbf{w}}^{\top}\hat{\mathbf{w}}\right)^{2}\frac{\hat{\mathbf{w}}^{\top}\left(\mathbf{S}-\operatorname{diag}\mathbf{S}\right)\hat{\mathbf{w}}}{\hat{\mathbf{w}}^{\top}\left(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top}-\operatorname{diag}(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top})\right)\hat{\mathbf{w}}}
+\rho_{A} = \left(\hat{\mathbf{w}}^{\top}\hat{\mathbf{w}}\right)^{2}\frac{\hat{\mathbf{w}}^{\top}\left(\mathbf{S}-\mathrm{diag}\,\mathbf{S}\right)\hat{\mathbf{w}}}{\hat{\mathbf{w}}^{\top}\left(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top}-\mathrm{diag}(\hat{\mathbf{w}}\hat{\mathbf{w}}^{\top})\right)\hat{\mathbf{w}}}
 ```
 
 ```math
-\hat{\boldsymbol\lambda}_{j} = \hat c_{j}\,\hat{\mathbf w}_{j}, \qquad \hat c_{j}^{2} = \frac{\rho_{A,j}}{\left(\hat{\mathbf w}_{j}^{\top}\hat{\mathbf w}_{j}\right)^{2}}, \qquad \widetilde{\operatorname{cor}}(\eta_i,\eta_j) = \frac{\operatorname{cor}(\hat\eta_i,\hat\eta_j)}{\sqrt{\rho_{A,i}\,\rho_{A,j}}}
+\hat{\boldsymbol\lambda}_{j} = \hat c_{j}\,\hat{\mathbf w}_{j}, \qquad \hat c_{j}^{2} = \frac{\rho_{A,j}}{\left(\hat{\mathbf w}_{j}^{\top}\hat{\mathbf w}_{j}\right)^{2}}, \qquad \widetilde{\mathrm{cor}}(\eta_i,\eta_j) = \frac{\mathrm{cor}(\hat\eta_i,\hat\eta_j)}{\sqrt{\rho_{A,i}\,\rho_{A,j}}}
 ```
 
 Koefisien jalur kemudian diestimasi dari korelasi antarkonstruk yang sudah dikoreksi.
@@ -195,7 +195,7 @@ Koefisien jalur kemudian diestimasi dari korelasi antarkonstruk yang sudah dikor
 \mathrm{HTMT}_{ij} = \frac{\bar{r}_{ij}}{\sqrt{\bar{r}_{ii}\,\bar{r}_{jj}}}
 ```
 
-SEMbada juga melaporkan interval kepercayaan bootstrap untuk HTMT, kriteria Fornell–Larcker $`\sqrt{\mathrm{AVE}_j} > \max_{i\neq j}\lvert\operatorname{cor}(\hat\eta_i,\hat\eta_j)\rvert`$, dan *cross loading*.
+SEMbada juga melaporkan interval kepercayaan bootstrap untuk HTMT, kriteria Fornell–Larcker $`\sqrt{\mathrm{AVE}_j} > \max_{i\neq j}\lvert\mathrm{cor}(\hat\eta_i,\hat\eta_j)\rvert`$, dan *cross loading*.
 
 **Kolinearitas** antarindikator formatif dan antarprediktor dalam model struktural, dengan $`R_k^2`$ adalah $`R^2`$ dari regresi variabel $`k`$ terhadap variabel lainnya:
 
@@ -220,7 +220,7 @@ SEMbada juga melaporkan interval kepercayaan bootstrap untuk HTMT, kriteria Forn
 **Varians terjelaskan dan ukuran efek.** $`p_j`$ adalah banyaknya prediktor konstruk $`j`$, dan ukuran efek membandingkan $`R^2`$ dengan dan tanpa satu prediktor:
 
 ```math
-R_{j}^{2} = 1 - \frac{\operatorname{Var}(\hat{\zeta}_{j})}{\operatorname{Var}(\hat{\eta}_{j})},\qquad R_{\mathrm{adj}}^{2} = 1 - \left(1 - R_{j}^{2}\right)\frac{n-1}{n-p_{j}-1}
+R_{j}^{2} = 1 - \frac{\mathrm{Var}(\hat{\zeta}_{j})}{\mathrm{Var}(\hat{\eta}_{j})},\qquad R_{\mathrm{adj}}^{2} = 1 - \left(1 - R_{j}^{2}\right)\frac{n-1}{n-p_{j}-1}
 ```
 
 ```math
@@ -306,7 +306,7 @@ Pengaruh $`X`$ terhadap $`Y`$ lalu bergantung pada moderator. SEMbada menggambar
 **Analisis multigrup (MGA).** Sebelum membandingkan kelompok, SEMbada menjalankan MICOM. Langkah 2 (invariansi komposisional) mengorelasikan skor komposit yang dibentuk dengan bobot masing-masing kelompok,
 
 ```math
-c_{j} = \operatorname{cor}\left(\mathbf{X}\mathbf{w}_{j}^{(1)},\, \mathbf{X}\mathbf{w}_{j}^{(2)}\right)
+c_{j} = \mathrm{cor}\left(\mathbf{X}\mathbf{w}_{j}^{(1)},\, \mathbf{X}\mathbf{w}_{j}^{(2)}\right)
 ```
 
 lalu membandingkan $`c_j`$ dengan distribusi permutasinya. Langkah 3 menguji kesamaan rata-rata dan varians komposit. Selisih koefisien jalur $`\Delta\beta = \beta^{(1)} - \beta^{(2)}`$ diuji dengan $`P`$ kali pengacakan ulang keanggotaan kelompok,
