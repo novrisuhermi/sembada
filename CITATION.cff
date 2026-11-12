@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use SEMbada in your research, please cite it as below."
+type: software
+title: "SEMbada: Portable PLS-SEM software"
+abstract: "SEMbada estimates partial least squares structural equation models (PLS-SEM and consistent PLS) with bootstrapping, PLSpredict, mediation, moderation, higher-order constructs, multigroup analysis with MICOM, and importance-performance map analysis. It runs offline as a single HTML file and exports Word reports, conference-style papers (Word, LaTeX, PDF), PowerPoint and Beamer slides, Excel tables, and figures."
+version: 1.11.1
+date-released: 2026-11-12
+authors:
+  - family-names: Suhermi
+    given-names: Novri
+    affiliation: "Institut Teknologi Sepuluh Nopember, Surabaya, Indonesia"
+repository-code: "https://github.com/novrisuhermi/sembada"
+url: "https://novrisuhermi-sem.share.connect.posit.cloud"
+keywords:
+  - PLS-SEM
+  - partial least squares
+  - structural equation modeling
+  - consistent PLS
+  - bootstrapping
+  - PLSpredict
+  - multigroup analysis
+  - importance-performance map analysis

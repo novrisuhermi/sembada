@@ -1,0 +1,40 @@
+{
+ "refl": "x_{k} = \\lambda_{k}\\,\\xi + \\varepsilon_{k}",
+ "form": "\\xi = \\sum_{k=1}^{K} w_{k}\\,x_{k}",
+ "struct": "\\eta_{j} = \\sum_{i \\in P_{j}} \\beta_{ij}\\,\\eta_{i} + \\zeta_{j}",
+ "outer": "\\hat{\\eta}_{j} = \\sum_{k=1}^{K_{j}} w_{kj}\\,x_{kj}",
+ "inner": "\\tilde{\\eta}_{j} = \\sum_{i \\neq j} e_{ij}\\,\\hat{\\eta}_{i}",
+ "scheme": {
+  "en": "e_{ij} = \\begin{cases} b_{ij}, & i \\in P_{j} \\\\ \\operatorname{cor}(\\hat{\\eta}_{i},\\hat{\\eta}_{j}), & j \\in P_{i} \\\\ 0, & \\text{otherwise} \\end{cases}",
+  "id": "e_{ij} = \\begin{cases} b_{ij}, & i \\in P_{j} \\\\ \\operatorname{cor}(\\hat{\\eta}_{i},\\hat{\\eta}_{j}), & j \\in P_{i} \\\\ 0, & \\text{lainnya} \\end{cases}"
+ },
+ "modeA": "w_{kj} \\propto \\operatorname{cov}\\left(x_{kj},\\,\\tilde{\\eta}_{j}\\right)",
+ "modeB": "\\mathbf{w}_{j} = \\left(\\mathbf{X}_{j}^{\\top}\\mathbf{X}_{j}\\right)^{-1}\\mathbf{X}_{j}^{\\top}\\tilde{\\boldsymbol{\\eta}}_{j}",
+ "conv": "\\max_{k}\\,\\bigl|w_{k}^{(s+1)} - w_{k}^{(s)}\\bigr| < \\epsilon",
+ "alpha": "\\alpha = \\frac{K}{K-1}\\left(1 - \\frac{\\sum_{k=1}^{K}\\sigma_{k}^{2}}{\\sigma_{t}^{2}}\\right)",
+ "rhoc": "\\rho_{C} = \\frac{\\left(\\sum_{k=1}^{K}\\lambda_{k}\\right)^{2}}{\\left(\\sum_{k=1}^{K}\\lambda_{k}\\right)^{2} + \\sum_{k=1}^{K}\\left(1-\\lambda_{k}^{2}\\right)}",
+ "rhoa": "\\rho_{A} = \\left(\\hat{\\mathbf{w}}^{\\top}\\hat{\\mathbf{w}}\\right)^{2}\\frac{\\hat{\\mathbf{w}}^{\\top}\\left(\\mathbf{S}-\\operatorname{diag}\\mathbf{S}\\right)\\hat{\\mathbf{w}}}{\\hat{\\mathbf{w}}^{\\top}\\left(\\hat{\\mathbf{w}}\\hat{\\mathbf{w}}^{\\top}-\\operatorname{diag}(\\hat{\\mathbf{w}}\\hat{\\mathbf{w}}^{\\top})\\right)\\hat{\\mathbf{w}}}",
+ "ave": "\\mathrm{AVE} = \\frac{1}{K}\\sum_{k=1}^{K}\\lambda_{k}^{2}",
+ "htmt": "\\mathrm{HTMT}_{ij} = \\frac{\\bar{r}_{ij}}{\\sqrt{\\bar{r}_{ii}\\,\\bar{r}_{jj}}}",
+ "vif": "\\mathrm{VIF}_{k} = \\frac{1}{1 - R_{k}^{2}}",
+ "r2": "R_{j}^{2} = 1 - \\frac{\\operatorname{Var}(\\hat{\\zeta}_{j})}{\\operatorname{Var}(\\hat{\\eta}_{j})},\\qquad R_{\\mathrm{adj}}^{2} = 1 - \\left(1 - R_{j}^{2}\\right)\\frac{n-1}{n-p_{j}-1}",
+ "f2": "f^{2} = \\frac{R_{\\mathrm{incl}}^{2} - R_{\\mathrm{excl}}^{2}}{1 - R_{\\mathrm{incl}}^{2}}",
+ "boot": "t = \\frac{\\hat{\\beta}}{\\mathrm{SE}^{*}}, \\qquad \\mathrm{SE}^{*} = \\sqrt{\\frac{1}{B-1}\\sum_{b=1}^{B}\\left(\\hat{\\beta}_{b}^{*} - \\bar{\\beta}^{*}\\right)^{2}}",
+ "ci": "\\mathrm{CI}_{1-\\alpha} = \\left[\\hat{\\beta}^{*}_{(\\alpha/2)},\\ \\hat{\\beta}^{*}_{(1-\\alpha/2)}\\right]",
+ "indirect": "\\beta_{X \\rightarrow M \\rightarrow Y} = \\beta_{XM}\\,\\beta_{MY}",
+ "srmr": "\\mathrm{SRMR} = \\sqrt{\\frac{2}{p(p+1)}\\sum_{i \\le j}\\left(r_{ij} - \\hat{r}_{ij}\\right)^{2}}",
+ "q2": "Q_{\\mathrm{predict}}^{2} = 1 - \\frac{\\sum_{i}\\left(y_{i} - \\hat{y}_{i}\\right)^{2}}{\\sum_{i}\\left(y_{i} - \\bar{y}_{\\mathrm{train}}\\right)^{2}}",
+ "rmse": "\\mathrm{RMSE} = \\sqrt{\\frac{1}{N}\\sum_{i=1}^{N}\\left(y_{i} - \\hat{y}_{i}\\right)^{2}},\\qquad \\mathrm{MAE} = \\frac{1}{N}\\sum_{i=1}^{N}\\left|y_{i} - \\hat{y}_{i}\\right|",
+ "nmin": {
+  "id": "n_{\\min} > \\left(\\frac{2{,}486}{\\lvert\\beta_{\\min}\\rvert}\\right)^{2}",
+  "en": "n_{\\min} > \\left(\\frac{2.486}{\\lvert\\beta_{\\min}\\rvert}\\right)^{2}"
+ },
+ "inter": "\\eta_{X \\times M} = \\hat{\\eta}_{X}\\,\\hat{\\eta}_{M}",
+ "slope": "\\frac{\\partial \\eta_{Y}}{\\partial \\eta_{X}} = \\beta_{XY} + \\beta_{(X \\times M)Y}\\,\\eta_{M}",
+ "hoc": "\\hat{\\eta}_{l} = \\lambda_{l}\\,\\xi_{H} + \\varepsilon_{l}, \\quad l = 1, \\ldots, L",
+ "micom": "c_{j} = \\operatorname{cor}\\left(\\mathbf{X}\\mathbf{w}_{j}^{(1)},\\, \\mathbf{X}\\mathbf{w}_{j}^{(2)}\\right)",
+ "mgaperm": "p = \\frac{\\#\\left\\{\\lvert\\Delta\\beta^{*}\\rvert \\geq \\lvert\\Delta\\beta\\rvert\\right\\} + 1}{P + 1}",
+ "ipmaw": "\\tilde{w}_{kj} = \\frac{w_{kj}/s_{k}}{\\sum_{l \\in B_{j}} w_{lj}/s_{l}}",
+ "ipmap": "\\mathrm{Perf}_{j} = \\frac{1}{n}\\sum_{i=1}^{n}\\sum_{k \\in B_{j}} \\tilde{w}_{kj}\\,\\frac{x_{ik} - \\min_{k}}{\\max_{k} - \\min_{k}} \\times 100",
+ "ipmai": "\\mathrm{Imp}_{j} = \\left[\\left(\\mathbf{I} - \\tilde{\\mathbf{B}}\\right)^{-1} - \\mathbf{I}\\right]_{jt}"
+}
