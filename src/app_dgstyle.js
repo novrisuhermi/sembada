@@ -1,11 +1,11 @@
 /* ---- path-diagram styles: presets, user customization, scoped CSS, figure notes, fonts for exported SVG/PNG */
 const DG_PRESETS = {
   sembada: { preset: 'sembada', shape: 'ellipse', names: 'abbr', namePos: 'auto', r2: 'inside', mv: true, loadings: true, box: true, nsDashed: true, lvFill: '', lvStroke: '', lvText: '', nameColor: '', mvFill: '', mvStroke: '', mvText: '', mvEdge: '', pathColor: '', font: 1, line: 1, curve: 'auto', bend: 0.1, pngScale: 3, pngBg: 'white' },
-  classic: { preset: 'classic', shape: 'circle', names: 'full', namePos: 'auto', r2: 'value', mv: true, loadings: true, box: false, nsDashed: false, lvFill: '#2196f3', lvStroke: '#2196f3', lvText: '#ffffff', nameColor: '#1d1d1f', mvFill: '#fff200', mvStroke: '#fff200', mvText: '#000000', mvEdge: '#1d1d1f', pathColor: '#1d1d1f', font: 1, line: 1, curve: 'straight', bend: 0.1 },
+  smartpls: { preset: 'smartpls', shape: 'circle', names: 'full', namePos: 'auto', r2: 'value', mv: true, loadings: true, box: false, nsDashed: false, lvFill: '#2196f3', lvStroke: '#2196f3', lvText: '#ffffff', nameColor: '#1d1d1f', mvFill: '#fff200', mvStroke: '#fff200', mvText: '#000000', mvEdge: '#1d1d1f', pathColor: '#1d1d1f', font: 1, line: 1, curve: 'straight', bend: 0.1 },
   mono: { preset: 'mono', shape: 'ellipse', names: 'abbr', namePos: 'auto', r2: 'inside', mv: true, loadings: true, box: false, nsDashed: true, lvFill: '#ffffff', lvStroke: '#000000', lvText: '#000000', nameColor: '#000000', mvFill: '#ffffff', mvStroke: '#000000', mvText: '#000000', mvEdge: '#000000', pathColor: '#000000', font: 1, line: 1, curve: 'auto', bend: 0.1 },
   minimal: { preset: 'minimal', shape: 'ellipse', names: 'abbr', namePos: 'auto', r2: 'inside', mv: false, loadings: false, box: false, nsDashed: true, lvFill: '#eef1f6', lvStroke: '#8a93a3', lvText: '', nameColor: '', mvFill: '', mvStroke: '', mvText: '', mvEdge: '', pathColor: '', font: 1, line: 1, curve: 'auto', bend: 0.1 }
 };
-const DG_SHOW = { sembada: 'coefp', classic: 'coef', mono: 'coefs', minimal: 'coefs' };
+const DG_SHOW = { sembada: 'coefp', smartpls: 'coef', mono: 'coefs', minimal: 'coefs' };
 const DG_THEME_DEF = { lvFill: '#ffffff', lvStroke: '#262a33', lvText: '#262a33', nameColor: '#262a33', mvFill: '#fdf0f3', mvStroke: '#d2405f', mvText: '#262a33', mvEdge: '#9a9eaa', pathColor: '#262a33' };
 const dgStyle = () => Object.assign({}, DG_PRESETS.sembada, (state.view && state.view.dg) || {});
 const dgMainShow = R => R.boot ? (['coef', 'coefp', 'coefs'].includes(state.view.diagram) ? state.view.diagram : 'coefp') : 'coef';
@@ -59,7 +59,7 @@ function dgCustomHTML() {
   const chk = (k, t, on, dis) => `<label class="dgc-chk"><input type="checkbox" data-change="dg-set" data-k="${k}"${on ? ' checked' : ''}${dis ? ' disabled' : ''}> <span>${t}</span></label>`;
   const col = (k, t) => `<label class="dg-col"><input type="color" data-change="dg-set" data-k="${k}" value="${st[k] || DG_THEME_DEF[k]}"><span>${t}</span></label>`;
   const rng = (k, t, lo, hi, step) => `<label class="dg-rng"><span>${t} <b>${Math.round(st[k] * 100)}%</b></span><input type="range" min="${lo}" max="${hi}" step="${step}" value="${Math.round(st[k] * 100)}" data-change="dg-set" data-k="${k}"></label>`;
-  const presets = [['sembada', 'SEMbada'], ['classic', tl('Lingkaran biru', 'Blue circles')], ['mono', tl('Hitam-putih (jurnal)', 'Black and white (journal)')], ['minimal', 'Minimal']];
+  const presets = [['sembada', 'SEMbada'], ['smartpls', tl('Gaya SmartPLS', 'SmartPLS style')], ['mono', tl('Hitam-putih (jurnal)', 'Black and white (journal)')], ['minimal', 'Minimal']];
   return `<div class="dg-cust" id="dg-cust">
 <div class="dgc-row"><span class="dgc-lbl">${tl('Gaya', 'Style')}</span><div class="seg" role="group" aria-label="${tl('Gaya diagram', 'Diagram style')}">${presets.map(([v, t]) => `<button data-action="dg-preset" data-v="${v}" aria-pressed="${st.preset === v}">${t}</button>`).join('')}</div>${st.preset === 'custom' ? `<span class="dgc-custom">${tl('Kustom', 'Custom')}</span>` : ''}<button class="btn btn-quiet" data-action="dg-preset" data-v="sembada">${tl('Atur ulang', 'Reset')}</button></div>
 <div class="dgc-grid">
