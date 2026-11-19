@@ -1,5 +1,5 @@
 /* ================================================================ export: shared helpers */
-const APP_VERSION = '1.11.1';
+const APP_VERSION = '1.11.2';
 const APP_AUTHOR = { family: 'Suhermi', given: 'Novri', initials: 'N.' };
 const APP_REPO = 'https://github.com/novrisuhermi/sembada';
 function loadLib(id, name) {

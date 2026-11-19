@@ -11,7 +11,7 @@ From questionnaire data to measurement and structural model results, publication
 </p>
 
 <p align="center">
-<img alt="version" src="https://img.shields.io/badge/version-1.11.1-262a33">
+<img alt="version" src="https://img.shields.io/badge/version-1.11.2-262a33">
 <img alt="platforms" src="https://img.shields.io/badge/runs%20on-web%20%7C%20Windows%20%7C%20macOS-d2405f">
 <img alt="languages" src="https://img.shields.io/badge/language-English%20%7C%20Indonesian-6b7080">
 <img alt="offline" src="https://img.shields.io/badge/works-offline-2e7d32">
@@ -387,13 +387,13 @@ The result, `app/SEMbada_PLS-SEM.html`, is identical to the file published here.
 
 If SEMbada helps your research, please cite it. GitHub shows the details under **Cite this repository**; the app also writes the reference into every generated paper.
 
-> Suhermi, N. (2026). *SEMbada: Portable PLS-SEM software* (Version 1.11.1) [Computer software]. https://github.com/novrisuhermi/sembada
+> Suhermi, N. (2026). *SEMbada: Portable PLS-SEM software* (Version 1.11.2) [Computer software]. https://github.com/novrisuhermi/sembada
 
 ```bibtex
 @software{suhermi2026sembada,
   author  = {Suhermi, Novri},
   title   = {SEMbada: Portable PLS-SEM software},
-  version = {1.11.1},
+  version = {1.11.2},
   year    = {2026},
   url     = {https://github.com/novrisuhermi/sembada}
 }

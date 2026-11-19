@@ -599,4 +599,67 @@ async function exportPaperPdf() {
     if (ok && !NATIVE) toast(tl('PDF makalah diunduh.', 'Paper PDF downloaded.'), 'ok');
   });
 }
-SECTIONS.splice(2, 0, { id: 'paper', group: () => tl('Ikhtisar', 'Overview'), title: () => tl('Narasi paper', 'Paper narrative'), short: () => tl('Narasi paper', 'Paper narrative'), render: paperHTML, tables: () => [] });
+SECTIONS.splice(2, 0, { id: 'paper', group: () => tl('Ikhtisar', 'Overview'), title: () => tl('Narasi paper', 'Paper narrative'), short: () => tl('Narasi paper', 'Paper narrative'), need: () => !(STATIC && paperLocked()), render: R => (paperLocked() ? paperLockedHTML() : paperHTML(R)), tables: () => [] });
+
+
+/* ---- temporary password lock for the paper (PDF, Word, LaTeX, copy, narrative view, and the paper section of the HTML report).
+   A client-side gate only: the code keeps a salted SHA-256 digest, never the password itself. Set digest to '' to lift the lock. */
+const PAPER_LOCK = { salt: 'sembada-paper-lock-v1:', digest: '9a9c9bc6dad62492675891819f29ce2008b3b355f86e29757d517ff514cdaf5c' };
+let paperOpen = false;
+try { paperOpen = sessionStorage.getItem('sembada-paper') === PAPER_LOCK.digest.slice(0, 24); } catch (e) { /* storage unavailable */ }
+const paperLocked = () => !!PAPER_LOCK.digest && !paperOpen;
+const LOCK_ICON = '<svg class="lock-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 0 1 6 0v3H9Zm3 4a2 2 0 0 1 1 3.73V19h-2v-1.27A2 2 0 0 1 12 14Z"/></svg>';
+function sha256hex(str) {
+  const bytes = Array.from(new TextEncoder().encode(str)), K = [], H = [], w = new Array(64);
+  for (let n = 2, c = 0; c < 64; n++) {
+    let prime = true; for (let i = 2; i * i <= n; i++) if (n % i === 0) { prime = false; break; }
+    if (prime) { if (c < 8) H[c] = (Math.pow(n, 1 / 2) % 1) * 4294967296 | 0; K[c++] = (Math.pow(n, 1 / 3) % 1) * 4294967296 | 0; }
+  }
+  const bitLen = bytes.length * 8; bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
+  for (let i = 7; i >= 0; i--) bytes.push(i >= 4 ? 0 : (bitLen >>> (i * 8)) & 255);
+  const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+  for (let off = 0; off < bytes.length; off += 64) {
+    for (let i = 0; i < 16; i++) w[i] = (bytes[off + 4 * i] << 24) | (bytes[off + 4 * i + 1] << 16) | (bytes[off + 4 * i + 2] << 8) | bytes[off + 4 * i + 3];
+    for (let i = 16; i < 64; i++) {
+      const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3), s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+    }
+    let [a, b, c, d, e, f, g, h] = H;
+    for (let i = 0; i < 64; i++) {
+      const t1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + w[i]) | 0;
+      const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+      h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+    }
+    H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0; H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+  }
+  return H.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+}
+function askPaperPassword() {
+  return new Promise(res => {
+    const d = document.createElement('dialog'); d.className = 'choice-dlg lock-dlg';
+    d.innerHTML = `<form method="dialog"><h3>${LOCK_ICON}${esc(tl('Makalah terkunci sementara', 'The paper is temporarily locked'))}</h3><div class="choice-b"><p>${esc(tl('Ekspor hasil dalam bentuk makalah (PDF, Word, LaTeX) untuk sementara dikunci. Masukkan kata sandi untuk membukanya selama sesi ini.', 'Exporting the results as a paper (PDF, Word, LaTeX) is locked for now. Enter the password to unlock it for this session.'))}</p><label class="lock-f"><span>${esc(tl('Kata sandi', 'Password'))}</span><input type="password" name="pw" autocomplete="off" spellcheck="false" required></label><p class="lock-err" role="alert" hidden>${esc(tl('Kata sandi salah. Coba lagi.', 'Wrong password. Please try again.'))}</p></div><div class="choice-a"><button type="button" class="btn btn-quiet" data-lock="cancel">${esc(tl('Batal', 'Cancel'))}</button><button class="btn btn-primary" value="ok">${esc(tl('Buka kunci', 'Unlock'))}</button></div></form>`;
+    const form = d.querySelector('form'), inp = d.querySelector('input'), err = d.querySelector('.lock-err');
+    d.querySelector('[data-lock="cancel"]').addEventListener('click', () => d.close('cancel'));
+    form.addEventListener('submit', ev => {
+      ev.preventDefault();
+      if (sha256hex(PAPER_LOCK.salt + inp.value) === PAPER_LOCK.digest) {
+        paperOpen = true;
+        try { sessionStorage.setItem('sembada-paper', PAPER_LOCK.digest.slice(0, 24)); } catch (e) { /* storage unavailable */ }
+        d.close('ok');
+      } else { err.hidden = false; inp.select(); }
+    });
+    document.body.appendChild(d);
+    d.addEventListener('close', () => { res(d.returnValue === 'ok'); d.remove(); });
+    d.showModal(); inp.focus();
+  });
+}
+async function withPaperUnlock(fn) {
+  if (!paperLocked()) return fn();
+  if (!(await askPaperPassword())) return;
+  toast(tl('Makalah terbuka untuk sesi ini.', 'The paper is unlocked for this session.'), 'ok');
+  render();
+  return fn();
+}
+function paperLockedHTML() {
+  return `<div class="callout lock-card"><p><b>${LOCK_ICON}${esc(tl('Narasi paper terkunci sementara.', 'The paper narrative is temporarily locked.'))}</b> ${esc(tl('Draf makalah dan ekspornya (PDF, Word, LaTeX) dibuka dengan kata sandi. Hasil analisis lain tetap bisa dilihat dan diunduh seperti biasa.', 'The draft paper and its exports (PDF, Word, LaTeX) open with a password. All other results can still be viewed and downloaded as usual.'))}</p><button class="btn btn-primary" data-action="paper-unlock">${esc(tl('Buka dengan kata sandi', 'Unlock with password'))}</button></div>`;
+}

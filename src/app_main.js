@@ -362,7 +362,7 @@ function viewResults() {
         <details class="menu" id="export-menu"><summary class="btn btn-primary">${tl('Unduh hasil', 'Download results')}</summary>
           <div class="menu-pop" role="menu" aria-label="${tl('Pilih format unduhan', 'Choose a download format')}">
             <div class="menu-lang"><span>${tl('Bahasa dokumen', 'Document language')}</span><span id="export-lang-seg">${exportLangSeg()}</span></div>
-            <div class="menu-g">${tl('Makalah', 'Paper')}</div>
+            <div class="menu-g">${tl('Makalah', 'Paper')}${paperLocked() ? `<span class="menu-lock">${LOCK_ICON}${tl('Terkunci', 'Locked')}</span>` : ''}</div>
             <button role="menuitem" data-action="export-paper-pdf"><b>${tl('Makalah PDF (LaTeX)', 'Paper PDF (LaTeX)')}</b><span>${tl('Dikompilasi langsung di aplikasi, siap dibaca dan dikirim', 'Compiled inside the app, ready to read and share')}</span></button>
             <button role="menuitem" data-action="export-paper"><b>${tl('Makalah Word (.docx)', 'Paper in Word (.docx)')}</b><span>${tl('Format konferensi dua kolom untuk disunting', 'Two-column conference format for editing')}</span></button>
             <button role="menuitem" data-action="export-paper-tex"><b>${tl('Makalah LaTeX (.zip)', 'Paper in LaTeX (.zip)')}</b><span>${tl('Sumber .tex dan gambar untuk Overleaf', 'The .tex source and figures for Overleaf')}</span></button>
@@ -489,13 +489,14 @@ const actions = {
   'copy-table': async el => { const tm = tableStore.get(el.dataset.tid); if (!tm) return; const ok = await copyRich(tableSimpleHTML(tm), tableTSV(tm)); toast(ok ? tl(`Tabel "${tm.title}" disalin. Tempel di Word atau Excel.`, `Table "${tm.title}" copied. Paste it into Word or Excel.`) : tl('Gagal menyalin. Gunakan tombol CSV.', 'Copy failed. Use the CSV button.'), ok ? 'ok' : 'err'); },
   'csv-table': el => { const tm = tableStore.get(el.dataset.tid); if (tm) download(safeFile(tm.title) + '.csv', tableCSV(tm), 'text/csv;charset=utf-8'); },
   'copy-narr': async () => { const ps = narrative(state.results); const ok = await copyRich(ps.map(p => `<p>${esc(p)}</p>`).join(''), ps.join('\n\n')); toast(ok ? tl('Narasi disalin.', 'Narrative copied.') : tl('Gagal menyalin.', 'Copy failed.'), ok ? 'ok' : 'err'); },
-  'copy-paper': async () => { const c = paperClipboard(state.results); const ok = await copyRich(c.html, c.text); toast(ok ? tl('Narasi paper disalin, termasuk tabel. Tempel di Word.', 'Paper narrative copied, including tables. Paste it into Word.') : tl('Gagal menyalin.', 'Copy failed.'), ok ? 'ok' : 'err'); },
+  'paper-unlock': () => withPaperUnlock(() => {}),
+  'copy-paper': () => withPaperUnlock(async () => { const c = paperClipboard(state.results); const ok = await copyRich(c.html, c.text); toast(ok ? tl('Narasi paper disalin, termasuk tabel. Tempel di Word.', 'Paper narrative copied, including tables. Paste it into Word.') : tl('Gagal menyalin.', 'Copy failed.'), ok ? 'ok' : 'err'); }),
   'copy-code': async () => { const code = seminrCode(state.results); const ok = await copyRich(`<pre>${esc(code)}</pre>`, code); toast(ok ? tl('Kode R disalin.', 'R code copied.') : tl('Gagal menyalin.', 'Copy failed.'), ok ? 'ok' : 'err'); },
   'export-xlsx': () => { closeMenu(); exportXLSX(); },
   'export-docx': () => exportDocx(),
-  'export-paper': () => exportPaperDocx(),
-  'export-paper-tex': () => exportPaperTex(),
-  'export-paper-pdf': () => exportPaperPdf(),
+  'export-paper': () => withPaperUnlock(() => exportPaperDocx()),
+  'export-paper-tex': () => withPaperUnlock(() => exportPaperTex()),
+  'export-paper-pdf': () => withPaperUnlock(() => exportPaperPdf()),
   'export-beamer-pdf': () => exportBeamerPdf(),
   'export-beamer-tex': () => exportBeamerTex(),
   'export-pptx': () => exportPptx(),
