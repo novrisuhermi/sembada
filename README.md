@@ -15,6 +15,7 @@ From questionnaire data to measurement and structural model results, publication
 <img alt="platforms" src="https://img.shields.io/badge/runs%20on-web%20%7C%20Windows%20%7C%20macOS-d2405f">
 <img alt="languages" src="https://img.shields.io/badge/language-English%20%7C%20Indonesian-6b7080">
 <img alt="offline" src="https://img.shields.io/badge/works-offline-2e7d32">
+<img alt="license" src="https://img.shields.io/badge/license-AGPL--3.0--or--later-1f6feb">
 </p>
 
 ![SEMbada home screen](docs/img/home.png)
@@ -39,6 +40,7 @@ From questionnaire data to measurement and structural model results, publication
 - [Repository layout and building from source](#repository-layout-and-building-from-source)
 - [Citation](#citation)
 - [References](#references)
+- [License](#license)
 - [Third-party software and licences](#third-party-software-and-licences)
 
 ## What it does
@@ -420,6 +422,12 @@ If SEMbada helps your research, please cite it. GitHub shows the details under *
 - Shmueli, G., Sarstedt, M., Hair, J. F., Cheah, J.-H., Ting, H., Vaithilingam, S., & Ringle, C. M. (2019). Predictive model assessment in PLS-SEM: Guidelines for using PLSpredict. *European Journal of Marketing, 53*(11), 2322–2347.
 - Tenenhaus, M., Esposito Vinzi, V., Chatelin, Y.-M., & Lauro, C. (2005). PLS path modeling. *Computational Statistics & Data Analysis, 48*(1), 159–205.
 - Wold, H. (1982). Soft modeling: The basic design and some extensions. In K. G. Jöreskog & H. Wold (Eds.), *Systems under indirect observation, Part II* (pp. 1–54). North-Holland.
+
+## License
+
+SEMbada is free and open-source software, released under the **GNU Affero General Public License v3.0 or later** (AGPL-3.0-or-later). You may use, study, share, and modify it, including for commercial work. If you distribute a modified version, or let others use a modified version over a network (for example as a hosted web app), you must offer them its complete source code under the same licence. SEMbada comes with no warranty. The full text is in [`LICENSE`](LICENSE).
+
+Copyright © 2026 Novri Suhermi. Bundled third-party components keep their own licences; see the next section.
 
 ## Third-party software and licences
 

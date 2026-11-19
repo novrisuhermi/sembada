@@ -1,5 +1,7 @@
 # Third-party notices
 
+SEMbada itself is licensed under the GNU Affero General Public License v3.0 or later; see [`LICENSE`](LICENSE).
+
 SEMbada includes or uses the components below. Each remains under its own licence. The full licence texts are in the files listed here and in the app under *Guide → About → Third-party licenses*.
 
 | Component | Used for | Licence | Licence text |
