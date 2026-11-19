@@ -1,5 +1,5 @@
 /* ================================================================ export: shared helpers */
-const APP_VERSION = '1.11.2';
+const APP_VERSION = '1.11.3';
 const APP_AUTHOR = { family: 'Suhermi', given: 'Novri', initials: 'N.' };
 const APP_REPO = 'https://github.com/novrisuhermi/sembada';
 function loadLib(id, name) {
@@ -260,7 +260,7 @@ async function exportDocx() {
 }
 
 /* ================================================================ PowerPoint deck (pptxgenjs, native charts) */
-function brandImages() {
+function brandImages(dark) {
   const mk = (size, dark, marks) => {
     const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d'), u = size / 100;
     if (marks) { g.fillStyle = dark ? '#ffffff' : '#262a33'; [27, 47.5, 68].forEach(y => g.fillRect(4 * u, y * u, 19 * u, 7 * u)); }
@@ -269,5 +269,5 @@ function brandImages() {
     g.fillStyle = dark ? '#ffffff' : '#262a33'; g.beginPath(); g.arc(cx, cy, r * 0.56, 0, Math.PI * 2); g.fill();
     return 'image/png;base64,' + c.toDataURL('image/png').split(',')[1];
   };
-  return { mark: mk(400, true, true), bubble: mk(160, false, false) };
+  return { mark: mk(400, !!dark, true), bubble: mk(160, !!dark, false) };
 }

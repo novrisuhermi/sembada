@@ -10,23 +10,48 @@ const deckFacts = R => {
   const sup = b ? R.hyp.filter(h => { const s = R.bootPath.get(h.i + ',' + h.j); return s && s.P < a; }) : [];
   return { r2lo: Math.min(...r2), r2hi: Math.max(...r2), sup, pp: R.pred ? predictPower(R) : null, srmr: R.A.fit.saturated.srmr };
 };
-function buildDeck2(PG, R, figs, eqs) {
-  const fig = k => figs.find(f => f.key === k), brand = brandImages(), refl = reflIdx(R), e = R.A.est, form = R.lv.map((_, j) => j).filter(j => !R.refl[j]);
-  const p = new PG(), F = 'Calibri', INK = '262A33', MUTE = '5D6270', SOFT = 'F7F3F5', PINK = 'F06D88', LINE = 'D9D4D7', X0 = 0.6, CW = 12.13, Y0 = 1.55, CH = 5.2, ST = stTxt(), fx = deckFacts(R);
+/* ---- slide theme: follows the app (light or dark): the app's misty landscape behind a glass panel, the app's colours */
+function deckPalette(dark) {
+  return dark
+    ? { dark: true, ink: 'F5F5F7', mute: 'A1A1A6', faint: '8E8E93', card: '2C2C2E', wash: '3A1E26', accent: 'F0657F', accentDeep: 'FF9BB0', accentLt: 'F49AAD', line: '3A3A3C', grid: '3A3A3C', thFill: '3A3A3C', thText: 'F5F5F7',
+        hero: 'F5F5F7', heroMute: 'C7C7CC', heroAccent: 'F49AAD', series3: ['636366', 'AEAEB2', 'F5F5F7'], st: { pass: '30D158', warn: 'FFB340', fail: 'FF6961', mute: '8E8E93', info: 'A1A1A6' }, stBg: { pass: '13301F', warn: '33260E', fail: '3A1716' }, eq: 'rgb(96%, 96%, 97%)', figCard: 'FFFFFF' }
+    : { dark: false, ink: '1D1D1F', mute: '6E6E73', faint: 'A1A1A6', card: 'F1F1F4', wash: 'FBEEF1', accent: 'D2405F', accentDeep: 'B3304D', accentLt: 'E0567A', line: 'E3E3E8', grid: 'E5E5EA', thFill: 'EBEBF0', thText: '1D1D1F',
+        hero: '1D1D1F', heroMute: '6E6E73', heroAccent: 'D2405F', series3: ['C7C7CC', '8E8E93', '1D1D1F'], st: ST_HEX, stBg: ST_BG, eq: null, figCard: null };
+}
+async function slideBackdrops(dark) {
+  const W = 1920, H = 1080, svg = sceneSVG(dark).replace('<svg ', `<svg width="${W}" height="${H}" `);
+  const scene = await new Promise((res, rej) => { const im = new Image(), u = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })); im.onload = () => { URL.revokeObjectURL(u); res(im); }; im.onerror = () => { URL.revokeObjectURL(u); rej(new Error(tl('latar slide tidak dapat dirender', 'the slide background could not be rendered'))); }; im.src = u; });
+  const shot = async panel => {
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
+    g.drawImage(scene, 0, 0, W, H);
+    if (panel) {
+      const x = 40, y = 34, w = W - 80, h = H - 68, r = 38, path = () => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+      g.save(); g.shadowColor = dark ? 'rgba(0,0,0,0.55)' : 'rgba(40,40,30,0.10)'; g.shadowBlur = 40; g.shadowOffsetY = 8; path(); g.fillStyle = dark ? 'rgba(24,24,27,0.90)' : 'rgba(255,255,255,0.88)'; g.fill(); g.restore();
+      path(); g.lineWidth = 2; g.strokeStyle = dark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.95)'; g.stroke();
+    }
+    const b = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.9)); return new Uint8Array(await b.arrayBuffer());
+  };
+  return { dark, title: await shot(false), content: await shot(true) };
+}
+function buildDeck2(PG, R, figs, eqs, bd) {
+  const fig = k => figs.find(f => f.key === k), brand = brandImages(!!(bd && bd.dark)), refl = reflIdx(R), e = R.A.est, form = R.lv.map((_, j) => j).filter(j => !R.refl[j]);
+  const K = deckPalette(!!(bd && bd.dark)), RC = {}, RB = {}, p = new PG(), F = 'Arial', INK = K.ink, MUTE = K.mute, SOFT = K.card, PINK = K.accentLt, LINE = K.line, X0 = 0.6, CW = 12.13, Y0 = 1.55, CH = 5.2, ST = stTxt(), fx = deckFacts(R);
+  Object.keys(ST_HEX).forEach(k => { RC[ST_HEX[k]] = K.st[k]; }); Object.keys(ST_BG).forEach(k => { RB[ST_BG[k]] = K.stBg[k]; });
   const algo = R.opts.plsc ? 'PLSc' : 'PLS-SEM', tails = R.boot ? (R.boot.tails === 'two' ? tl('dua arah', 'two-tailed') : tl('satu arah', 'one-tailed')) : '';
   p.layout = 'LAYOUT_WIDE'; p.author = 'SEMbada'; p.title = infoTitleFor(R); p.subject = tl('Presentasi hasil PLS-SEM', 'PLS-SEM results presentation');
   p.theme = { headFontFace: F, bodyFontFace: F };
-  p.defineSlideMaster({ title: 'SB_DARK', background: { color: INK }, objects: [] });
-  p.defineSlideMaster({ title: 'SB_CONTENT', background: { color: 'FFFFFF' },
+  p.defineSlideMaster({ title: 'SB_DARK', background: bd ? { data: 'image/jpeg;base64,' + b64(bd.title) } : { color: K.dark ? '000000' : 'F5F5F7' }, objects: [] });
+  p.defineSlideMaster({ title: 'SB_PANEL', background: bd ? { data: 'image/jpeg;base64,' + b64(bd.content) } : { color: K.dark ? '1C1C1E' : 'FFFFFF' }, objects: [] });
+  p.defineSlideMaster({ title: 'SB_CONTENT', background: bd ? { data: 'image/jpeg;base64,' + b64(bd.content) } : { color: K.dark ? '1C1C1E' : 'FFFFFF' },
     objects: [
       { image: { x: X0, y: 0.5, w: 0.38, h: 0.38, data: brand.bubble } },
       { placeholder: { options: { name: 'title', type: 'title', x: 1.15, y: 0.34, w: 11.6, h: 0.72, fontFace: F, fontSize: 32, bold: true, color: INK, align: 'left', valign: 'middle', margin: 0 }, text: '' } },
-      { text: { text: 'SEMbada', options: { x: X0, y: 7.0, w: 3, h: 0.28, fontFace: F, fontSize: 10, color: '9A9EAA', margin: 0 } } }
+      { text: { text: 'SEMbada', options: { x: X0, y: 7.0, w: 3, h: 0.28, fontFace: F, fontSize: 10, color: K.faint, margin: 0 } } }
     ],
-    slideNumber: { x: 12.13, y: 7.0, w: 0.6, h: 0.28, fontFace: F, fontSize: 10, color: '9A9EAA', align: 'right' } });
+    slideNumber: { x: 12.13, y: 7.0, w: 0.6, h: 0.28, fontFace: F, fontSize: 10, color: K.faint, align: 'right' } });
   const content = (title, sub) => { const s = p.addSlide({ masterName: 'SB_CONTENT' }); s.addText(title, { placeholder: 'title' }); if (sub) s.addText(sub, { x: 1.15, y: 1.04, w: 11.6, h: 0.34, fontFace: F, fontSize: 14, color: MUTE, margin: 0, isTextBox: true }); return s; };
   const card = (s, x, y, w, h, fill) => s.addShape(p.ShapeType.roundRect, { x, y, w, h, fill: { color: fill || SOFT }, line: { color: fill || SOFT }, rectRadius: 0.1 });
-  const img = (s, f, box) => { if (!f) return; const k = Math.min(box.w / f.w, box.h / f.h), w = f.w * k, h = f.h * k; s.addImage({ data: 'image/png;base64,' + b64(f.png), x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w, h, altText: f.title }); };
+  const img = (s, f, box) => { if (!f) return; const pd = K.figCard ? 0.12 : 0, k = Math.min((box.w - 2 * pd) / f.w, (box.h - 2 * pd) / f.h), w = f.w * k, h = f.h * k; if (K.figCard) card(s, box.x + (box.w - w) / 2 - pd, box.y + (box.h - h) / 2 - pd, w + 2 * pd, h + 2 * pd, K.figCard); s.addImage({ data: 'image/png;base64,' + b64(f.png), x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w, h, altText: f.title }); };
   const eqImg = (s, key, box, zoom) => { const q = eqs[key]; if (!q) return; let w = q.w / 72 * (zoom || 1.9), h = q.h / 72 * (zoom || 1.9); const k = Math.min(1, box.w / w, box.h / h); w *= k; h *= k; s.addImage({ data: 'image/png;base64,' + b64(q.png), x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w, h, altText: eqv(key).tex }); };
   const eqCard = (s, x, y, w, h, title, key, note, key2) => {
     card(s, x, y, w, h);
@@ -39,34 +64,34 @@ function buildDeck2(PG, R, figs, eqs) {
   const divider = (no, title, desc) => {
     const s = p.addSlide({ masterName: 'SB_DARK' });
     s.addText(String(no).padStart(2, '0'), { x: 0.9, y: 1.85, w: 4, h: 1.5, fontFace: F, fontSize: 100, bold: true, color: PINK, margin: 0, isTextBox: true });
-    s.addText(title, { x: 0.9, y: 3.5, w: 11.6, h: 0.9, fontFace: F, fontSize: 40, bold: true, color: 'FFFFFF', margin: 0, isTextBox: true });
-    if (desc) s.addText(desc, { x: 0.9, y: 4.45, w: 11.6, h: 0.9, fontFace: F, fontSize: 18, color: 'C9CCD3', margin: 0, isTextBox: true, valign: 'top' });
+    s.addText(title, { x: 0.9, y: 3.5, w: 11.6, h: 0.9, fontFace: F, fontSize: 40, bold: true, color: K.hero, margin: 0, isTextBox: true });
+    if (desc) s.addText(desc, { x: 0.9, y: 4.45, w: 11.6, h: 0.9, fontFace: F, fontSize: 18, color: K.heroMute, margin: 0, isTextBox: true, valign: 'top' });
   };
   const tbl = (s, cells, o) => {
     o = o || {}; const w = o.w || CW, rel = o.rel || autoWidths(cells.head, cells.rows), sum = rel.reduce((a, c) => a + c, 0);
     const colW = rel.map(v => Math.round(v / sum * w * 100) / 100); colW[colW.length - 1] = Math.round((w - colW.slice(0, -1).reduce((a, c) => a + c, 0)) * 100) / 100;
-    const cellOf = (c, header) => ({ text: String(c.text), options: Object.assign({ bold: header || !!c.b, color: header ? 'FFFFFF' : c.color || INK, align: c.align === 'r' ? 'right' : 'left' }, header ? { fill: { color: INK } } : c.fill ? { fill: { color: c.fill } } : {}) });
+    const cellOf = (c, header) => ({ text: String(c.text), options: Object.assign({ bold: header || !!c.b, color: header ? K.thText : (RC[c.color] || c.color) || INK, align: c.align === 'r' ? 'right' : 'left' }, header ? { fill: { color: K.thFill } } : c.fill ? { fill: { color: RB[c.fill] || c.fill } } : {}) });
     s.addTable([cells.head.map(c => cellOf(c, true))].concat(cells.rows.map(r => r.map(c => cellOf(c, false)))), { x: o.x === undefined ? X0 : o.x, y: o.y === undefined ? Y0 : o.y, w, colW, fontFace: F, fontSize: o.fs || 14, color: INK, valign: 'middle', rowH: o.rowH || 0.42, border: [{ type: 'none' }, { type: 'none' }, { type: 'solid', pt: 0.75, color: LINE }, { type: 'none' }] });
   };
-  const chartOpts = extra => Object.assign({ barDir: 'bar', showLegend: false, showValue: true, dataLabelPosition: 'outEnd', dataLabelFormatCode: '0.000', dataLabelFontFace: F, dataLabelFontSize: 11, dataLabelColor: MUTE, catAxisLabelFontFace: F, catAxisLabelFontSize: 12, catAxisLabelColor: INK, valAxisLabelFontFace: F, valAxisLabelFontSize: 11, valAxisLabelColor: MUTE, valAxisLabelFormatCode: '0.0', valGridLine: { color: 'E6E2E5', size: 0.5 }, catGridLine: { style: 'none' }, legendFontFace: F, legendFontSize: 12, legendColor: MUTE, barGapWidthPct: 45 }, extra);
+  const chartOpts = extra => Object.assign({ barDir: 'bar', showLegend: false, showValue: true, dataLabelPosition: 'outEnd', dataLabelFormatCode: '0.000', dataLabelFontFace: F, dataLabelFontSize: 11, dataLabelColor: MUTE, catAxisLabelFontFace: F, catAxisLabelFontSize: 12, catAxisLabelColor: INK, valAxisLabelFontFace: F, valAxisLabelFontSize: 11, valAxisLabelColor: MUTE, valAxisLabelFormatCode: '0.0', valGridLine: { color: K.grid, size: 0.5 }, catGridLine: { style: 'none' }, legendFontFace: F, legendFontSize: 12, legendColor: MUTE, barGapWidthPct: 45 }, extra);
   const r3 = v => Math.round(v * 1000) / 1000, rev = a => a.slice().reverse(), pct = v => fmt(v * 100, 1) + '%';
-  const checksCells = items => ({ head: [{ text: tl('Kriteria', 'Criterion') }, { text: 'Status' }, { text: tl('Keterangan', 'Details') }], rows: items.map(x => [{ text: x.c }, { text: ST[x.st], b: true, color: ST_HEX[x.st], fill: ST_BG[x.st] }, { text: x.d }]) });
+  const checksCells = items => ({ head: [{ text: tl('Kriteria', 'Criterion') }, { text: 'Status' }, { text: tl('Keterangan', 'Details') }], rows: items.map(x => [{ text: x.c }, { text: ST[x.st], b: true, color: K.st[x.st], fill: K.stBg[x.st] }, { text: x.d }]) });
 
   /* 1. title */
   const TT = infoTitleFor(R);
   let s = p.addSlide({ masterName: 'SB_DARK' });
   s.addImage({ data: brand.mark, x: 0.85, y: 2.45, w: 1.6, h: 1.6 });
-  s.addText(TT.length > 110 ? TT.slice(0, 107) + '…' : TT, { x: 2.8, y: 2.1, w: 9.9, h: 1.35, fontFace: F, fontSize: TT.length > 70 ? 26 : TT.length > 44 ? 32 : 40, bold: true, color: 'FFFFFF', valign: 'bottom', margin: 0, isTextBox: true, fit: 'shrink' });
-  s.addText(tl('Hasil analisis partial least squares structural equation modeling', 'Partial least squares structural equation modeling results'), { x: 2.8, y: 3.55, w: 9.9, h: 0.55, fontFace: F, fontSize: 22, color: 'F3C9D2', margin: 0, isTextBox: true });
-  s.addText(tl(`${fmtInt(R.prep.n)} responden, ${R.model.constructs.length} konstruk, ${R.hyp.length} hipotesis. Dihitung ${R.time.toLocaleDateString(LOC(), { day: 'numeric', month: 'long', year: 'numeric' })}.`, `${fmtInt(R.prep.n)} respondents, ${R.model.constructs.length} constructs, ${R.hyp.length} hypotheses. Calculated on ${R.time.toLocaleDateString(LOC(), { day: 'numeric', month: 'long', year: 'numeric' })}.`), { x: 2.8, y: 4.2, w: 9.9, h: 0.45, fontFace: F, fontSize: 16, color: 'C9CCD3', margin: 0, isTextBox: true });
-  { const au = infoAuthors(); if (au.length) s.addText(au.map(a => a.name).join(', ') + (String(au[0].inst || '').trim() ? '  ·  ' + String(au[0].inst).trim() : ''), { x: 2.8, y: 4.95, w: 9.9, h: 0.5, fontFace: F, fontSize: 16, color: 'FFFFFF', margin: 0, isTextBox: true, fit: 'shrink' }); }
+  s.addText(TT.length > 110 ? TT.slice(0, 107) + '…' : TT, { x: 2.8, y: 2.1, w: 9.9, h: 1.35, fontFace: F, fontSize: TT.length > 70 ? 26 : TT.length > 44 ? 32 : 40, bold: true, color: K.hero, valign: 'bottom', margin: 0, isTextBox: true, fit: 'shrink' });
+  s.addText(tl('Hasil analisis partial least squares structural equation modeling', 'Partial least squares structural equation modeling results'), { x: 2.8, y: 3.55, w: 9.9, h: 0.55, fontFace: F, fontSize: 22, color: K.heroAccent, margin: 0, isTextBox: true });
+  s.addText(tl(`${fmtInt(R.prep.n)} responden, ${R.model.constructs.length} konstruk, ${R.hyp.length} hipotesis. Dihitung ${R.time.toLocaleDateString(LOC(), { day: 'numeric', month: 'long', year: 'numeric' })}.`, `${fmtInt(R.prep.n)} respondents, ${R.model.constructs.length} constructs, ${R.hyp.length} hypotheses. Calculated on ${R.time.toLocaleDateString(LOC(), { day: 'numeric', month: 'long', year: 'numeric' })}.`), { x: 2.8, y: 4.2, w: 9.9, h: 0.45, fontFace: F, fontSize: 16, color: K.heroMute, margin: 0, isTextBox: true });
+  { const au = infoAuthors(); if (au.length) s.addText(au.map(a => a.name).join(', ') + (String(au[0].inst || '').trim() ? '  ·  ' + String(au[0].inst).trim() : ''), { x: 2.8, y: 4.95, w: 9.9, h: 0.5, fontFace: F, fontSize: 16, color: K.hero, margin: 0, isTextBox: true, fit: 'shrink' }); }
 
   /* 2. agenda */
   const agenda = [[tl('Model penelitian', 'Research model'), tl('Konstruk dan hipotesis', 'Constructs and hypotheses')], [tl('Metodologi', 'Methodology'), tl('Model, algoritma, dan kriteria', 'Model, algorithm, and criteria')], [tl('Model pengukuran', 'Measurement model'), tl('Reliabilitas dan validitas', 'Reliability and validity')], [tl('Model struktural', 'Structural model'), tl('Hipotesis, mediasi, prediksi', 'Hypotheses, mediation, prediction')], [tl('Kesimpulan', 'Conclusions'), tl('Temuan utama', 'Key findings')]];
   s = content(tl('Agenda', 'Agenda'));
   agenda.forEach(([t, d], i) => {
-    const x = X0 + i * 2.47; card(s, x, Y0 + 0.4, 2.27, 3.6, i % 2 ? SOFT : 'FBEFF2');
-    s.addText(String(i + 1).padStart(2, '0'), { x: x + 0.25, y: Y0 + 0.65, w: 1.8, h: 0.9, fontFace: F, fontSize: 44, bold: true, color: 'D2405F', margin: 0, isTextBox: true });
+    const x = X0 + i * 2.47; card(s, x, Y0 + 0.4, 2.27, 3.6, i % 2 ? SOFT : K.wash);
+    s.addText(String(i + 1).padStart(2, '0'), { x: x + 0.25, y: Y0 + 0.65, w: 1.8, h: 0.9, fontFace: F, fontSize: 44, bold: true, color: K.accent, margin: 0, isTextBox: true });
     s.addText(t, { x: x + 0.25, y: Y0 + 1.75, w: 1.85, h: 0.9, fontFace: F, fontSize: 18, bold: true, color: INK, margin: 0, isTextBox: true, valign: 'top' });
     s.addText(d, { x: x + 0.25, y: Y0 + 2.75, w: 1.85, h: 1.0, fontFace: F, fontSize: 14, color: MUTE, margin: 0, isTextBox: true, valign: 'top' });
   });
@@ -87,8 +112,8 @@ function buildDeck2(PG, R, figs, eqs) {
   eqCard(s, X0, Y0 + 0.1, 3.9, 2.6, tl('Pengukuran reflektif', 'Reflective measurement'), 'refl', tl('Indikator mencerminkan konstruk', 'Indicators reflect the construct'));
   eqCard(s, X0 + 4.12, Y0 + 0.1, 3.9, 2.6, tl('Pengukuran formatif', 'Formative measurement'), 'form', tl('Indikator membentuk konstruk', 'Indicators form the construct'));
   eqCard(s, X0 + 8.24, Y0 + 0.1, 3.89, 2.6, tl('Model struktural', 'Structural model'), 'struct', tl('Pendahulu memengaruhi konstruk endogen', 'Predecessors affect each endogenous construct'));
-  card(s, X0, Y0 + 2.95, CW, 2.0, 'FBEFF2');
-  s.addText([{ text: tl('Mengapa PLS-SEM? ', 'Why PLS-SEM? '), options: { bold: true, color: 'B3304D' } }, { text: tl('Pendekatan berbasis varians yang memaksimalkan varians terjelaskan konstruk endogen, cocok untuk model dengan banyak konstruk dan indikator serta berorientasi prediksi.', 'A variance-based approach that maximizes the explained variance of the endogenous constructs; suited to models with many constructs and indicators and oriented towards prediction.') }], { x: X0 + 0.35, y: Y0 + 3.2, w: CW - 0.7, h: 1.5, fontFace: F, fontSize: 18, color: INK, margin: 0, isTextBox: true, valign: 'middle' });
+  card(s, X0, Y0 + 2.95, CW, 2.0, K.wash);
+  s.addText([{ text: tl('Mengapa PLS-SEM? ', 'Why PLS-SEM? '), options: { bold: true, color: K.accentDeep } }, { text: tl('Pendekatan berbasis varians yang memaksimalkan varians terjelaskan konstruk endogen, cocok untuk model dengan banyak konstruk dan indikator serta berorientasi prediksi.', 'A variance-based approach that maximizes the explained variance of the endogenous constructs; suited to models with many constructs and indicators and oriented towards prediction.') }], { x: X0 + 0.35, y: Y0 + 3.2, w: CW - 0.7, h: 1.5, fontFace: F, fontSize: 18, color: INK, margin: 0, isTextBox: true, valign: 'middle' });
   s = content(tl('Algoritma PLS', 'The PLS algorithm'), tl(`Skema ${R.settings.scheme}, iterasi hingga konvergen (${e.iterations} iterasi pada data ini)`, `${R.settings.scheme} scheme, iterated until convergence (${e.iterations} iterations for these data)`));
   eqCard(s, X0, Y0 + 0.05, 5.95, 2.45, tl('1  Pendekatan luar', '1  Outer approximation'), 'outer', tl('Skor konstruk = jumlah tertimbang indikator', 'Construct score = weighted sum of indicators'));
   eqCard(s, X0 + 6.18, Y0 + 0.05, 5.95, 2.45, tl('2  Pendekatan dalam', '2  Inner approximation'), 'inner', tl('Proksi dari konstruk yang berdekatan', 'Proxy from adjacent constructs'));
@@ -138,10 +163,10 @@ function buildDeck2(PG, R, figs, eqs) {
     s.addChart(p.ChartType.bar, [{ name: 'Outer loading', labels: rev(L), values: rev(V) }], chartOpts({ x: X0, y: Y0, w: CW, h: CH, chartColors: [INK], valAxisMinVal: 0, valAxisMaxVal: 1, valAxisMajorUnit: 0.1, catAxisLabelFontSize: L.length > 24 ? 9 : 11 }));
     s = content(tl('Reliabilitas dan validitas konvergen', 'Reliability and convergent validity'), tl(`Batas: alpha dan rho ≥ ${k2(0.70)}, AVE ≥ ${k2(0.50)}`, `Thresholds: alpha and rho ≥ ${k2(0.70)}, AVE ≥ ${k2(0.50)}`));
     tbl(s, tmToCells(relTable(R)), { w: 6.3, rel: [2.2, 1.6, 1.3, 2.0, 1.2], fs: 14 });
-    s.addChart(p.ChartType.bar, ["Cronbach's alpha", 'rho_A', 'rho_C'].map((nm, q) => ({ name: nm, labels: rev(refl.map(j => R.lv[j])), values: rev(refl.map(j => r3([R.A.alpha[j], R.A.rhoA[j], R.A.rhoC[j]][q]))) })), chartOpts({ x: 7.1, y: Y0, w: 5.63, h: CH, barGrouping: 'clustered', chartColors: ['B4B8C2', '6F7480', INK], showLegend: true, legendPos: 'b', valAxisMinVal: 0, valAxisMaxVal: 1, valAxisMajorUnit: 0.2, dataLabelFontSize: 9, barGapWidthPct: 60 }));
+    s.addChart(p.ChartType.bar, ["Cronbach's alpha", 'rho_A', 'rho_C'].map((nm, q) => ({ name: nm, labels: rev(refl.map(j => R.lv[j])), values: rev(refl.map(j => r3([R.A.alpha[j], R.A.rhoA[j], R.A.rhoC[j]][q]))) })), chartOpts({ x: 7.1, y: Y0, w: 5.63, h: CH, barGrouping: 'clustered', chartColors: K.series3, showLegend: true, legendPos: 'b', valAxisMinVal: 0, valAxisMaxVal: 1, valAxisMajorUnit: 0.2, dataLabelFontSize: 9, barGapWidthPct: 60 }));
     if (refl.length > 1) { s = content(tl('Validitas diskriminan (HTMT)', 'Discriminant validity (HTMT)'), tl(`Hijau < ${k2(0.85)}; kuning ${k2(0.85)}–${k2(0.90)}; merah ≥ ${k2(0.90)} (Henseler dkk., 2015)`, `Green < ${k2(0.85)}; amber ${k2(0.85)}–${k2(0.90)}; red ≥ ${k2(0.90)} (Henseler et al., 2015)`)); img(s, fig('v-htmt'), { x: X0, y: Y0, w: 7.9, h: CH });
       let mx = -1, mp = ''; refl.forEach((i, a) => refl.forEach((j, c) => { if (c > a && R.A.HTMT[i][j] > mx) { mx = R.A.HTMT[i][j]; mp = `${R.lv[i]}–${R.lv[j]}`; } })); const okH = mx < 0.85, wkH = mx < 0.90;
-      card(s, 8.75, Y0 + 0.2, 3.98, 2.9); s.addText([{ text: tl('HTMT tertinggi', 'Highest HTMT'), options: { bold: true, fontSize: 16, breakLine: true } }, { text: fmt(mx), options: { fontSize: 34, bold: true, color: okH ? '22744E' : wkH ? 'B07012' : 'B3261E', breakLine: true } }, { text: mp, options: { fontSize: 14, color: MUTE, breakLine: true } }, { text: okH ? tl('Semua pasangan di bawah batas konservatif.', 'All pairs below the conservative threshold.') : wkH ? tl('Masih di bawah batas longgar 0,90.', 'Still below the lenient 0.90 threshold.') : tl('Ada pasangan di atas 0,90.', 'Some pairs exceed 0.90.'), options: { fontSize: 13, color: INK } }], { x: 9.0, y: Y0 + 0.4, w: 3.5, h: 2.5, fontFace: F, color: INK, margin: 0, valign: 'top', isTextBox: true }); }
+      card(s, 8.75, Y0 + 0.2, 3.98, 2.9); s.addText([{ text: tl('HTMT tertinggi', 'Highest HTMT'), options: { bold: true, fontSize: 16, breakLine: true } }, { text: fmt(mx), options: { fontSize: 34, bold: true, color: okH ? K.st.pass : wkH ? K.st.warn : K.st.fail, breakLine: true } }, { text: mp, options: { fontSize: 14, color: MUTE, breakLine: true } }, { text: okH ? tl('Semua pasangan di bawah batas konservatif.', 'All pairs below the conservative threshold.') : wkH ? tl('Masih di bawah batas longgar 0,90.', 'Still below the lenient 0.90 threshold.') : tl('Ada pasangan di atas 0,90.', 'Some pairs exceed 0.90.'), options: { fontSize: 13, color: INK } }], { x: 9.0, y: Y0 + 0.4, w: 3.5, h: 2.5, fontFace: F, color: INK, margin: 0, valign: 'top', isTextBox: true }); }
   }
 
   /* 12-18. structural model results */
@@ -154,7 +179,7 @@ function buildDeck2(PG, R, figs, eqs) {
   tbl(s, tmToCells(r2Table(R)), { x: 7.25, w: 5.48, rel: [1.6, 1, 1.4, 1.7], fs: 14 });
   const hypCells = R.hyp.map(h => {
     const sb = R.boot ? R.bootPath.get(h.i + ',' + h.j) : null, sig = !!(sb && sb.P < R.boot.alpha);
-    return sb ? [{ text: h.h, b: true }, { text: `${h.from} → ${h.to}` }, { text: fmt(sb.O), align: 'r' }, { text: fmt(sb.T), align: 'r' }, { text: fmtP(sb.P), align: 'r', color: sig ? ST_HEX.pass : undefined, b: sig }, { text: decideTxt(sig), b: true, color: sig ? ST_HEX.pass : ST_HEX.mute, fill: sig ? ST_BG.pass : undefined }]
+    return sb ? [{ text: h.h, b: true }, { text: `${h.from} → ${h.to}` }, { text: fmt(sb.O), align: 'r' }, { text: fmt(sb.T), align: 'r' }, { text: fmtP(sb.P), align: 'r', color: sig ? K.st.pass : undefined, b: sig }, { text: decideTxt(sig), b: true, color: sig ? K.st.pass : K.st.mute, fill: sig ? K.stBg.pass : undefined }]
       : [{ text: h.h, b: true }, { text: `${h.from} → ${h.to}` }, { text: fmt(e.B[h.i][h.j]), align: 'r' }, { text: f2Cat(R.A.f2[h.i][h.j]) }];
   });
   const hypHead = R.boot ? [{ text: tl('Hipotesis', 'Hypothesis') }, { text: tl('Jalur', 'Path') }, { text: 'β', align: 'r' }, { text: tl('t statistik', 't statistic'), align: 'r' }, { text: 'P value', align: 'r' }, { text: tl('Keputusan', 'Decision') }] : [{ text: tl('Hipotesis', 'Hypothesis') }, { text: tl('Jalur', 'Path') }, { text: 'β', align: 'r' }, { text: 'Effect size f²' }];
@@ -189,7 +214,7 @@ function buildDeck2(PG, R, figs, eqs) {
       const sig = !!(d.s && d.s.P < al);
       s = content(tl(`Moderasi: ${d.M} × ${d.X} → ${d.Y}`, `Moderation: ${d.M} × ${d.X} → ${d.Y}`), tl('Pendekatan dua tahap; simple slope pada moderator −1 SD, rata-rata, dan +1 SD', 'Two-stage approach; simple slopes at moderator −1 SD, mean, and +1 SD'));
       img(s, fig('slope-' + d.k), { x: X0, y: Y0, w: 7.5, h: CH }); card(s, 8.35, Y0 + 0.1, 4.38, 4.1);
-      s.addText([{ text: tl('Efek interaksi', 'Interaction effect'), options: { bold: true, fontSize: 18, breakLine: true } }, { text: `β = ${fmt(d.b3)}`, options: { fontSize: 30, bold: true, color: sig ? 'D2405F' : INK, breakLine: true } },
+      s.addText([{ text: tl('Efek interaksi', 'Interaction effect'), options: { bold: true, fontSize: 18, breakLine: true } }, { text: `β = ${fmt(d.b3)}`, options: { fontSize: 30, bold: true, color: sig ? K.accent : INK, breakLine: true } },
         { text: d.s ? `t = ${fmt(d.s.T)}; ${fmtPtxt(d.s.P)}` : tl('belum diuji (tanpa bootstrapping)', 'not tested (no bootstrapping)'), options: { fontSize: 15, color: MUTE, breakLine: true } }, { text: `f² = ${fmt(d.f2)} (${f2IntCat(d.f2)})`, options: { fontSize: 15, color: MUTE, breakLine: true } },
         { text: R.boot ? `${d.h.h}: ${decideTxt(sig)}` : '', options: { fontSize: 16, bold: true, breakLine: true } }, { text: ' ', options: { fontSize: 8, breakLine: true } },
         { text: tl(`Slope ${d.X} → ${d.Y}: ${fmt(d.slopes[0])} (−1 SD), ${fmt(d.slopes[1])} (rata-rata), ${fmt(d.slopes[2])} (+1 SD)`, `Slope ${d.X} → ${d.Y}: ${fmt(d.slopes[0])} (−1 SD), ${fmt(d.slopes[1])} (mean), ${fmt(d.slopes[2])} (+1 SD)`), options: { fontSize: 14, color: INK } }],
@@ -209,16 +234,16 @@ function buildDeck2(PG, R, figs, eqs) {
   /* 19-21. key findings, conclusions, references */
   s = content(tl('Temuan utama', 'Key findings'));
   const kf = [[R.boot ? `${fx.sup.length}/${R.hyp.length}` : '–', tl('hipotesis diterima', 'hypotheses supported')], [fx.r2lo === fx.r2hi ? pct(fx.r2lo) : `${fmt(fx.r2lo * 100, 0)}–${fmt(fx.r2hi * 100, 0)}%`, tl('varians konstruk endogen terjelaskan', 'variance explained in endogenous constructs')], fx.pp ? [fx.pp.code === 'high' ? tl('Tinggi', 'High') : fx.pp.code === 'medium' ? tl('Sedang', 'Medium') : fx.pp.code === 'low' ? tl('Rendah', 'Low') : '–', tl('kekuatan prediksi di luar sampel', 'out-of-sample predictive power')] : [fmt(fx.srmr), 'SRMR (saturated model)']];
-  kf.forEach(([v, l], i) => { const x = X0 + i * 4.1; card(s, x, Y0 + 0.4, 3.85, 3.6, i === 0 ? 'FBEFF2' : SOFT); s.addText(v, { x: x + 0.35, y: Y0 + 0.9, w: 3.2, h: 1.5, fontFace: F, fontSize: 60, bold: true, color: i === 0 ? 'B3304D' : INK, margin: 0, isTextBox: true }); s.addText(l, { x: x + 0.35, y: Y0 + 2.6, w: 3.2, h: 1.1, fontFace: F, fontSize: 18, color: MUTE, margin: 0, isTextBox: true, valign: 'top' }); });
-  s = p.addSlide({ masterName: 'SB_DARK' });
-  s.addText(tl('Kesimpulan', 'Conclusions'), { x: X0, y: 0.45, w: CW, h: 0.8, fontFace: F, fontSize: 36, bold: true, color: 'FFFFFF', margin: 0, isTextBox: true });
+  kf.forEach(([v, l], i) => { const x = X0 + i * 4.1; card(s, x, Y0 + 0.4, 3.85, 3.6, i === 0 ? K.wash : SOFT); s.addText(v, { x: x + 0.35, y: Y0 + 0.9, w: 3.2, h: 1.5, fontFace: F, fontSize: 60, bold: true, color: i === 0 ? K.accentDeep : INK, margin: 0, isTextBox: true }); s.addText(l, { x: x + 0.35, y: Y0 + 2.6, w: 3.2, h: 1.1, fontFace: F, fontSize: 18, color: MUTE, margin: 0, isTextBox: true, valign: 'top' }); });
+  s = p.addSlide({ masterName: 'SB_PANEL' });
+  s.addText(tl('Kesimpulan', 'Conclusions'), { x: X0, y: 0.45, w: CW, h: 0.8, fontFace: F, fontSize: 36, bold: true, color: K.hero, margin: 0, isTextBox: true });
   const cut = R.hyp.length > 8 ? Math.ceil(R.hyp.length / 2) : R.hyp.length, rowH = Math.min(0.62, 5.0 / Math.max(1, cut));
   R.hyp.slice(0, 20).forEach((h, i) => {
     const col = i < cut ? 0 : 1, row = col ? i - cut : i, x = X0 + col * 6.2, y = 1.55 + row * rowH, sb = R.boot ? R.bootPath.get(h.i + ',' + h.j) : null, sig = !!(sb && sb.P < R.boot.alpha);
     s.addShape(p.ShapeType.ellipse, { x, y: y + 0.07, w: 0.26, h: 0.26, fill: { color: sig ? PINK : INK }, line: { color: PINK, width: 1.5 } });
-    s.addText([{ text: `${h.h}  ${h.from} → ${h.to}`, options: { bold: true, color: 'FFFFFF', breakLine: true } }, { text: sb ? `${decideTxt(sig)}: β = ${fmt(sb.O)}; ${fmtPtxt(sb.P)}` : tl(`β = ${fmt(e.B[h.i][h.j])}; signifikansi belum diuji`, `β = ${fmt(e.B[h.i][h.j])}; significance not tested`), options: { color: 'C9CCD3', fontSize: 14 } }], { x: x + 0.45, y, w: 5.6, h: rowH, fontFace: F, fontSize: 16, margin: 0, isTextBox: true, valign: 'top' });
+    s.addText([{ text: `${h.h}  ${h.from} → ${h.to}`, options: { bold: true, color: K.hero, breakLine: true } }, { text: sb ? `${decideTxt(sig)}: β = ${fmt(sb.O)}; ${fmtPtxt(sb.P)}` : tl(`β = ${fmt(e.B[h.i][h.j])}; signifikansi belum diuji`, `β = ${fmt(e.B[h.i][h.j])}; significance not tested`), options: { color: K.heroMute, fontSize: 14 } }], { x: x + 0.45, y, w: 5.6, h: rowH, fontFace: F, fontSize: 16, margin: 0, isTextBox: true, valign: 'top' });
   });
-  if (R.boot) s.addText(tl('Bulatan penuh = hipotesis diterima; bulatan kosong = ditolak.', 'Filled circle = hypothesis supported; hollow circle = not supported.'), { x: X0, y: 6.85, w: CW, h: 0.35, fontFace: F, fontSize: 12, color: '9A9EAA', margin: 0, isTextBox: true });
+  if (R.boot) s.addText(tl('Bulatan penuh = hipotesis diterima; bulatan kosong = ditolak.', 'Filled circle = hypothesis supported; hollow circle = not supported.'), { x: X0, y: 6.85, w: CW, h: 0.35, fontFace: F, fontSize: 12, color: K.faint, margin: 0, isTextBox: true });
   const refs = paperModel(R).refs.map((r, i) => `[${i + 1}] ${refText(r)}`), half = Math.ceil(refs.length / 2);
   s = content(tl('Daftar pustaka', 'References'));
   [refs.slice(0, half), refs.slice(half)].forEach((list, c) => s.addText(list.map((t, i) => ({ text: t, options: { breakLine: i < list.length - 1 } })), { x: X0 + c * 6.15, y: Y0, w: 5.95, h: CH, fontFace: F, fontSize: 10.5, color: INK, margin: 0, isTextBox: true, valign: 'top', paraSpaceAfter: 5 }));
@@ -227,9 +252,9 @@ function buildDeck2(PG, R, figs, eqs) {
 async function exportPptx() {
   const R = state.results; if (!R) return;
   await withBusy(tl('Menyusun presentasi PowerPoint…', 'Building the PowerPoint presentation…'), async () => {
-    const PG = loadLib('lib-pptx', 'PptxGenJS'), L = exportLang(), figs = slideFigures(R, L);
+    const PG = loadLib('lib-pptx', 'PptxGenJS'), L = exportLang(), figs = slideFigures(R, L), dark = isDarkNow();
     await renderPngs(figs);
-    const eqs = await eqPngs(DECK_EQS, L, 4), deck = withLang(L, () => buildDeck2(PG, R, figs, eqs));
+    const bd = await slideBackdrops(dark), eqs = await eqPngs(DECK_EQS, L, 4, deckPalette(dark).eq), deck = withLang(L, () => buildDeck2(PG, R, figs, eqs, bd));
     const blob = await deck.write({ outputType: 'blob' });
     const ok = await download(safeFile(state.name) + (L === 'en' ? '_presentation_PLS-SEM.pptx' : '_presentasi_PLS-SEM.pptx'), blob);
     if (ok && !NATIVE) toast(tl('Presentasi PowerPoint diunduh.', 'PowerPoint presentation downloaded.'), 'ok');
@@ -303,7 +328,8 @@ function buildBeamerTex(R) {
 }
 async function beamerAssets(R, L) {
   const figs = slideFigures(R, L).filter(f => BEAMER_FILES[f.key] || f.ext || ['v-htmt', 'v-f2', 'v-ridge', 'v-effects', 'v-rmse', 'v-indcor'].includes(f.key)); await renderPngs(figs);
-  return figs.map(f => ({ name: BEAMER_FILES[f.key] || f.key + '.png', data: f.png }));
+  const bd = await slideBackdrops(isDarkNow());
+  return figs.map(f => ({ name: BEAMER_FILES[f.key] || f.key + '.png', data: f.png })).concat([{ name: 'sb-title.jpg', data: bd.title }, { name: 'sb-content.jpg', data: bd.content }]);
 }
 async function exportBeamerTex() {
   const R = state.results; if (!R) return;
@@ -367,3 +393,25 @@ buildBeamerTex = (f => R => {
   if (has('v-indcor')) { const a = t.indexOf('\\sectionframe{03}'); if (a >= 0) t = t.slice(0, a) + imgF(tl('Korelasi antarindikator', 'Indicator correlations'), 'v-indcor.png', tl('Kotak = indikator satu konstruk.', 'Boxes = indicators of one construct.')) + '\n' + t.slice(a); }
   return t;
 })(buildBeamerTex);
+
+/* Beamer: the app's look, light or dark like the app at export time (landscape backdrops, glass panel, app colours) */
+function beamerTheme(t, dark) {
+  const K = deckPalette(dark), at = t.indexOf('\\begin{document}'); let pre = t.slice(0, at), body = t.slice(at);
+  const set = (a, b) => { if (pre.indexOf(a) < 0) throw new Error('beamer theme: ' + a); pre = pre.replace(a, b); };
+  set('\\definecolor{ink}{HTML}{262A33}', `\\definecolor{ink}{HTML}{${K.ink}}`);
+  set('\\definecolor{accent}{HTML}{D2405F}', `\\definecolor{accent}{HTML}{${K.accent}}`);
+  set('\\definecolor{accentlt}{HTML}{F06D88}', `\\definecolor{accentlt}{HTML}{${K.accentLt}}`);
+  set('\\definecolor{soft}{HTML}{F7F3F5}', `\\definecolor{soft}{HTML}{${K.card}}`);
+  set('\\definecolor{muted}{HTML}{5D6270}', `\\definecolor{muted}{HTML}{${K.mute}}\n\\definecolor{hero}{HTML}{${K.hero}}\n\\definecolor{heromuted}{HTML}{${K.heroMute}}\n\\definecolor{figbg}{HTML}{FFFFFF}`);
+  set('\\definecolor{pass}{HTML}{22744E}', `\\definecolor{pass}{HTML}{${K.st.pass}}`);
+  set('\\setbeamercolor{block title}{fg=white,bg=ink}', '\\setbeamercolor{block title}{fg=ink,bg=soft}');
+  set('\\setbeamertemplate{navigation symbols}{}', '\\setbeamertemplate{navigation symbols}{}\n\\setbeamertemplate{background}{\\includegraphics[width=\\paperwidth,height=\\paperheight]{sb-content.jpg}}\n' +
+    (dark ? '\\newcommand{\\sbfig}[2][]{{\\setlength{\\fboxsep}{2.5pt}\\colorbox{figbg}{\\includegraphics[#1]{#2}}}}' : '\\newcommand{\\sbfig}[2][]{\\includegraphics[#1]{#2}}'));
+  set('{\\setbeamercolor{background canvas}{bg=ink}', '{\\setbeamertemplate{background}{\\includegraphics[width=\\paperwidth,height=\\paperheight]{sb-title.jpg}}');
+  pre += '\\newcommand{\\panelframe}[1]{{\\setbeamertemplate{footline}{}\\begin{frame}[plain]#1\\end{frame}}}\n';
+  body = body.split('\\darkframe{\\vspace{1.2em}').join('\\panelframe{\\vspace{1.2em}');
+  const hero = x => x.split('{\\color{white}').join('{\\color{hero}').split('white!70!ink').join('heromuted').split('white!55!ink').join('heromuted');
+  const fit = x => x.split('\\begin{tabular}').join('\\adjustbox{max width=\\linewidth}{\\begin{tabular}').split('\\end{tabular}').join('\\end{tabular}}');   // wide tables shrink to the panel
+  return hero(pre) + fit(hero(body).split('\\includegraphics[').join('\\sbfig['));
+}
+buildBeamerTex = (f => R => beamerTheme(f(R), isDarkNow()))(buildBeamerTex);

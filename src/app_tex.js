@@ -68,4 +68,4 @@ async function texCompile(mainTex, assets) {
 const EQS = __EQS__;
 const eqv = (k, lang) => { const e = EQS[k], v = e[lang || I18N.lang] || e.en; return typeof v === 'string' ? e[v] : v; };
 const eqDataURL = v => 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(v.svg)));
-async function eqPngs(keys, lang, scale) { const out = {}; for (const k of keys) { const v = eqv(k, lang); out[k] = Object.assign({ w: v.w, h: v.h }, { png: (await svgToPng(v.svg, scale || 4, true)).bytes }); } return out; }
+async function eqPngs(keys, lang, scale, color) { const out = {}; for (const k of keys) { const v = eqv(k, lang); out[k] = Object.assign({ w: v.w, h: v.h }, { png: (await svgToPng(color ? v.svg.split('rgb(0%, 0%, 0%)').join(color) : v.svg, scale || 4, true)).bytes }); } return out; }

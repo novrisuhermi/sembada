@@ -367,8 +367,8 @@ function viewResults() {
             <button role="menuitem" data-action="export-paper"><b>${tl('Makalah Word (.docx)', 'Paper in Word (.docx)')}</b><span>${tl('Format konferensi dua kolom untuk disunting', 'Two-column conference format for editing')}</span></button>
             <button role="menuitem" data-action="export-paper-tex"><b>${tl('Makalah LaTeX (.zip)', 'Paper in LaTeX (.zip)')}</b><span>${tl('Sumber .tex dan gambar untuk Overleaf', 'The .tex source and figures for Overleaf')}</span></button>
             <div class="menu-g">${tl('Presentasi', 'Presentation')}</div>
-            <button role="menuitem" data-action="export-pptx"><b>${tl('PowerPoint (.pptx)', 'PowerPoint (.pptx)')}</b><span>${tl('Rumus LaTeX dan grafik yang bisa diedit', 'LaTeX equations and editable charts')}</span></button>
-            <button role="menuitem" data-action="export-beamer-pdf"><b>${tl('Beamer PDF', 'Beamer PDF')}</b><span>${tl('Slide LaTeX yang dikompilasi di aplikasi', 'LaTeX slides compiled inside the app')}</span></button>
+            <button role="menuitem" data-action="export-pptx"><b>${tl('PowerPoint (.pptx)', 'PowerPoint (.pptx)')}</b><span>${tl('Grafik bisa diedit; tema terang atau gelap mengikuti aplikasi', 'Editable charts; light or dark theme follows the app')}</span></button>
+            <button role="menuitem" data-action="export-beamer-pdf"><b>${tl('Beamer PDF', 'Beamer PDF')}</b><span>${tl('Slide LaTeX; tema terang atau gelap mengikuti aplikasi', 'LaTeX slides; light or dark theme follows the app')}</span></button>
             <button role="menuitem" data-action="export-beamer-tex"><b>${tl('Beamer LaTeX (.zip)', 'Beamer LaTeX (.zip)')}</b><span>${tl('Sumber slides.tex dan gambar', 'The slides.tex source and figures')}</span></button>
             <div class="menu-g">${tl('Laporan dan data', 'Report and data')}</div>
             <button role="menuitem" data-action="export-docx"><b>${tl('Laporan Word (.docx)', 'Word report (.docx)')}</b><span>${tl('Semua tabel dan gambar hasil', 'All result tables and figures')}</span></button>

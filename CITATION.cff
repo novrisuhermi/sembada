@@ -3,7 +3,7 @@ message: "If you use SEMbada in your research, please cite it as below."
 type: software
 title: "SEMbada: Portable PLS-SEM software"
 abstract: "SEMbada estimates partial least squares structural equation models (PLS-SEM and consistent PLS) with bootstrapping, PLSpredict, mediation, moderation, higher-order constructs, multigroup analysis with MICOM, and importance-performance map analysis. It runs offline as a single HTML file and exports Word reports, conference-style papers (Word, LaTeX, PDF), PowerPoint and Beamer slides, Excel tables, and figures."
-version: 1.11.2
+version: 1.11.3
 date-released: "2026-11-19"
 authors:
   - family-names: Suhermi
