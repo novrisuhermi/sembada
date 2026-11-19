@@ -11,7 +11,7 @@ Dari data kuesioner ke hasil model pengukuran dan struktural, gambar siap terbit
 </p>
 
 <p align="center">
-<img alt="versi" src="https://img.shields.io/badge/versi-1.11.3-262a33">
+<img alt="versi" src="https://img.shields.io/badge/versi-1.11.4-262a33">
 <img alt="platform" src="https://img.shields.io/badge/berjalan%20di-web%20%7C%20Windows%20%7C%20macOS-d2405f">
 <img alt="bahasa" src="https://img.shields.io/badge/bahasa-Indonesia%20%7C%20Inggris-6b7080">
 <img alt="offline" src="https://img.shields.io/badge/bisa-offline-2e7d32">
@@ -387,13 +387,13 @@ Hasilnya, `app/SEMbada_PLS-SEM.html`, identik dengan file yang diterbitkan di si
 
 Bila SEMbada membantu penelitian Anda, mohon sitasi. GitHub menampilkan rinciannya di **Cite this repository**; aplikasi ini juga menuliskan rujukannya di setiap makalah yang dihasilkan.
 
-> Suhermi, N. (2026). *SEMbada: Portable PLS-SEM software* (Version 1.11.3) [Computer software]. https://github.com/novrisuhermi/sembada
+> Suhermi, N. (2026). *SEMbada: Portable PLS-SEM software* (Version 1.11.4) [Computer software]. https://github.com/novrisuhermi/sembada
 
 ```bibtex
 @software{suhermi2026sembada,
   author  = {Suhermi, Novri},
   title   = {SEMbada: Portable PLS-SEM software},
-  version = {1.11.3},
+  version = {1.11.4},
   year    = {2026},
   url     = {https://github.com/novrisuhermi/sembada}
 }

@@ -127,7 +127,7 @@ async function runAll() {
     else { console.error(e); state.run = null; render(); toast(errorMessage(e, prep), 'err'); return; }
   }
   state.run = null; state.results = decorate(R); state.ui.step = 'results'; state.ui.section = 'summary';
-  render(); const mm = $('#main'); if (mm) mm.scrollTop = 0;
+  render(); toTop();
   if (!R.cancelled) toast(tl('Perhitungan selesai.', 'Calculation finished.'), 'ok');
   if (typeof recentSave === 'function') recentSave();
 }

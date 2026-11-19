@@ -56,3 +56,17 @@ document.addEventListener('click', e => {
   const d = e.target; if (!d || d.tagName !== 'DIALOG' || !d.open) return;
   const r = d.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) d.close();
 });
+/* phones: move to the top of the page on navigation and keep the active step and results section in view */
+function toTop() { const m = $('#main'); if (m) m.scrollTop = 0; const se = document.scrollingElement; if (se && se.scrollTop) se.scrollTop = 0; }
+function centerActive() {
+  const fit = (box, el) => { if (!box || !el || box.scrollWidth <= box.clientWidth + 2) return; const b = box.getBoundingClientRect(), r = el.getBoundingClientRect(); box.scrollLeft += (r.left - b.left) - (box.clientWidth - r.width) / 2; };
+  const rail = $('#rail'); fit(rail, rail && rail.querySelector('.step.active'));
+  const rn = document.querySelector('.res-nav'); fit(rn, rn && rn.querySelector('button[aria-current="true"]'));
+}
+afterRender = (f => () => { f(); requestAnimationFrame(centerActive); })(afterRender);
+/* the download menu opens on whichever side keeps it inside the screen (button on the right on desktop, on the left on phones) */
+document.addEventListener('toggle', e => {
+  const d = e.target; if (!d || d.id !== 'export-menu' || !d.open) return; const m = d.querySelector('.menu-pop'); if (!m) return;
+  m.style.left = ''; m.style.right = ''; const r = m.getBoundingClientRect();
+  if (r.left < 8) { m.style.left = '0'; m.style.right = 'auto'; } else if (r.right > innerWidth - 8) { m.style.right = '0'; m.style.left = 'auto'; }
+}, true);

@@ -702,6 +702,46 @@ dialog .dlg-b { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavi
 .boot-note { margin: 12px 0 0; max-width: 70ch; line-height: 1.5; }
 .dgc-tip { margin: 2px 0 0; line-height: 1.45; }
 
+/* ---- phones and small tablets: the whole page scrolls (the header scrolls away), the step strip stays on top */
+@media (max-width: 860px) {
+  html, body { height: auto; min-height: 100%; }
+  #app { display: block; height: auto; }
+  main { overflow: visible; }
+  .rail { position: sticky; top: max(6px, env(safe-area-inset-top, 0px)); z-index: 40; }
+}
+@media (max-width: 640px) {
+  .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; margin: calc(8px + env(safe-area-inset-top, 0px)) 10px 4px; padding: 8px 10px; }
+  .top-actions { display: contents; }
+  .topbar .brand { order: 1; flex: 1 1 auto; min-width: 0; }
+  .topbar .theme-seg { order: 2; }
+  .topbar .lang-seg { order: 3; }
+  .topbar::before { content: ""; order: 4; flex: 0 0 100%; height: 0; }
+  .top-actions > .btn { order: 5; flex: 1 1 0; min-width: 0; padding: 7px 4px; font-size: 14px; text-align: center; justify-content: center; }
+  .topbar .project-name { order: 6; flex: 1 1 100%; max-width: none; }
+  .rail { margin: 4px 8px 6px; padding: 5px; }
+  .rail .step { padding: 6px 12px 6px 4px; }
+  .res-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; gap: 6px; padding: 6px; margin-bottom: 12px; }
+  .res-nav::-webkit-scrollbar { display: none; }
+  .res-nav .g { display: none; }
+  .res-nav button { flex: 0 0 auto; width: auto; white-space: nowrap; }
+  #export-menu .menu-pop { width: min(360px, calc(100vw - 28px)); max-height: 62vh; }
+  input[type="text"], input[type="number"], input[type="email"], input[type="search"], input[type="password"], select, textarea, .project-name { font-size: 16px; }
+  .view { padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-width: 920px) {
+  .empty-grid, .run-grid, .res-grid { grid-template-columns: minmax(0, 1fr); }
+  .res-nav, .res-body, .run-grid > *, .empty-grid > * { min-width: 0; max-width: 100%; }
+  select, .field, .row > * { min-width: 0; max-width: 100%; }
+}
+@media (max-width: 920px) {
+  .pager { flex-wrap: wrap; gap: 8px; }
+  .pager .btn { white-space: normal; max-width: 100%; text-align: center; }
+}
+@media (max-width: 640px) {
+  .pager { flex-direction: column; align-items: stretch; }
+  .pager > span:empty { display: none; }
+}
+
 .btn-link { background: none; border: 0; padding: 0; color: inherit; font: inherit; font-weight: 600; text-decoration: underline; text-decoration-color: var(--rule); text-decoration-thickness: 2px; text-underline-offset: 3px; cursor: pointer; text-align: left; }
 .btn-link:hover { text-decoration-color: var(--dropout); }
 pre.code { background: var(--sheet); border: 1px solid var(--line); padding: 12px 14px; border-radius: var(--r); overflow: auto; font-family: ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace; font-size: 12.5px; line-height: 1.55; margin: 0; max-width: 100%; }
@@ -2606,7 +2646,7 @@ async function runAll() {
     else { console.error(e); state.run = null; render(); toast(errorMessage(e, prep), 'err'); return; }
   }
   state.run = null; state.results = decorate(R); state.ui.step = 'results'; state.ui.section = 'summary';
-  render(); const mm = $('#main'); if (mm) mm.scrollTop = 0;
+  render(); toTop();
   if (!R.cancelled) toast(tl('Perhitungan selesai.', 'Calculation finished.'), 'ok');
   if (typeof recentSave === 'function') recentSave();
 }
@@ -3172,7 +3212,7 @@ async function downloadPNG() {
 }
 
 /* ================================================================ export: shared helpers */
-const APP_VERSION = '1.11.3';
+const APP_VERSION = '1.11.4';
 const APP_AUTHOR = { family: 'Suhermi', given: 'Novri', initials: 'N.' };
 const APP_REPO = 'https://github.com/novrisuhermi/sembada';
 function loadLib(id, name) {
@@ -5419,6 +5459,20 @@ document.addEventListener('click', e => {
   const d = e.target; if (!d || d.tagName !== 'DIALOG' || !d.open) return;
   const r = d.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) d.close();
 });
+/* phones: move to the top of the page on navigation and keep the active step and results section in view */
+function toTop() { const m = $('#main'); if (m) m.scrollTop = 0; const se = document.scrollingElement; if (se && se.scrollTop) se.scrollTop = 0; }
+function centerActive() {
+  const fit = (box, el) => { if (!box || !el || box.scrollWidth <= box.clientWidth + 2) return; const b = box.getBoundingClientRect(), r = el.getBoundingClientRect(); box.scrollLeft += (r.left - b.left) - (box.clientWidth - r.width) / 2; };
+  const rail = $('#rail'); fit(rail, rail && rail.querySelector('.step.active'));
+  const rn = document.querySelector('.res-nav'); fit(rn, rn && rn.querySelector('button[aria-current="true"]'));
+}
+afterRender = (f => () => { f(); requestAnimationFrame(centerActive); })(afterRender);
+/* the download menu opens on whichever side keeps it inside the screen (button on the right on desktop, on the left on phones) */
+document.addEventListener('toggle', e => {
+  const d = e.target; if (!d || d.id !== 'export-menu' || !d.open) return; const m = d.querySelector('.menu-pop'); if (!m) return;
+  m.style.left = ''; m.style.right = ''; const r = m.getBoundingClientRect();
+  if (r.left < 8) { m.style.left = '0'; m.style.right = 'auto'; } else if (r.right > innerWidth - 8) { m.style.right = '0'; m.style.left = 'auto'; }
+}, true);
 
 /* ================================================================ home, research info, model templates, recent projects, citation, advanced-analysis controls */
 const T_ = (key, en, id, den, did, pre, items) => ({ key, en, id, den, did, pre: pre || [], items: items || null });
@@ -5891,7 +5945,7 @@ function goStep(s) {
   if ((s === 'model' || s === 'run') && !state.data) { toast(tl('Muat data terlebih dahulu.', 'Load data first.')); return; }
   if (s === 'results' && !state.results) { toast(tl('Belum ada hasil. Jalankan perhitungan di langkah Hitung.', 'No results yet. Run the calculation in the Calculate step.')); return; }
   state.ui.step = s; if (s !== 'model') { state.ui.connect = false; state.ui.connectFrom = null; }
-  render(); const m = $('#main'); if (m) m.scrollTop = 0;
+  render(); toTop();
 }
 const getPath = (o, p) => p.split('.').reduce((a, k) => (a === null || a === undefined ? a : a[k]), o);
 function setPath(o, p, v) { const ks = p.split('.'); let x = o; for (let i = 0; i < ks.length - 1; i++) x = x[ks[i]]; x[ks[ks.length - 1]] = v; }
@@ -6336,7 +6390,7 @@ const actions = {
   'run': () => runAll(),
   'run-again': () => runAll(),
   'cancel-run': () => { if (state.run) { state.run.cancel = true; setProgress(tl('Menghentikan…', 'Stopping…'), state.run.frac || 0); } },
-  'section': el => { state.ui.section = el.dataset.sec; renderMain(); const m = $('#main'); if (m) m.scrollTop = 0; },
+  'section': el => { state.ui.section = el.dataset.sec; renderMain(); toTop(); },
   'decsep': el => { state.view.comma = el.dataset.v === 'comma'; if (state.ui.step === 'results') renderMain(); refreshDialogs(); },
   'dgshow': el => { state.view.diagram = el.dataset.v; renderMain(); },
   'copy-table': async el => { const tm = tableStore.get(el.dataset.tid); if (!tm) return; const ok = await copyRich(tableSimpleHTML(tm), tableTSV(tm)); toast(ok ? tl(`Tabel "${tm.title}" disalin. Tempel di Word atau Excel.`, `Table "${tm.title}" copied. Paste it into Word or Excel.`) : tl('Gagal menyalin. Gunakan tombol CSV.', 'Copy failed. Use the CSV button.'), ok ? 'ok' : 'err'); },

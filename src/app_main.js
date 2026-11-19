@@ -38,7 +38,7 @@ function goStep(s) {
   if ((s === 'model' || s === 'run') && !state.data) { toast(tl('Muat data terlebih dahulu.', 'Load data first.')); return; }
   if (s === 'results' && !state.results) { toast(tl('Belum ada hasil. Jalankan perhitungan di langkah Hitung.', 'No results yet. Run the calculation in the Calculate step.')); return; }
   state.ui.step = s; if (s !== 'model') { state.ui.connect = false; state.ui.connectFrom = null; }
-  render(); const m = $('#main'); if (m) m.scrollTop = 0;
+  render(); toTop();
 }
 const getPath = (o, p) => p.split('.').reduce((a, k) => (a === null || a === undefined ? a : a[k]), o);
 function setPath(o, p, v) { const ks = p.split('.'); let x = o; for (let i = 0; i < ks.length - 1; i++) x = x[ks[i]]; x[ks[ks.length - 1]] = v; }
@@ -483,7 +483,7 @@ const actions = {
   'run': () => runAll(),
   'run-again': () => runAll(),
   'cancel-run': () => { if (state.run) { state.run.cancel = true; setProgress(tl('Menghentikan…', 'Stopping…'), state.run.frac || 0); } },
-  'section': el => { state.ui.section = el.dataset.sec; renderMain(); const m = $('#main'); if (m) m.scrollTop = 0; },
+  'section': el => { state.ui.section = el.dataset.sec; renderMain(); toTop(); },
   'decsep': el => { state.view.comma = el.dataset.v === 'comma'; if (state.ui.step === 'results') renderMain(); refreshDialogs(); },
   'dgshow': el => { state.view.diagram = el.dataset.v; renderMain(); },
   'copy-table': async el => { const tm = tableStore.get(el.dataset.tid); if (!tm) return; const ok = await copyRich(tableSimpleHTML(tm), tableTSV(tm)); toast(ok ? tl(`Tabel "${tm.title}" disalin. Tempel di Word atau Excel.`, `Table "${tm.title}" copied. Paste it into Word or Excel.`) : tl('Gagal menyalin. Gunakan tombol CSV.', 'Copy failed. Use the CSV button.'), ok ? 'ok' : 'err'); },
